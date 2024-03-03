@@ -1,0 +1,45 @@
+x = [ 1,0,1,0,9,0];
+indices_ceros = find(x == 0);
+indices_no_ceros = find(x ~= 0);
+x_interp = interp1(indices_no_ceros, x(indices_no_ceros), indices_ceros, 'linear');
+x_interp(isnan(x_interp)) = 0;
+x(indices_ceros) = x_interp;
+
+
+temp_matriz = [
+    1,0,1,0,9,0;
+    1,0,2,0,4,0;
+    1,0,2,0,4,0;
+    0,0,0,0,0,0;
+];
+
+temp_matriz_2= [
+    1,2,1,2,1,
+    2,0,2,0,2,
+    1,2,1,2,1
+    2,0,2,0,2
+];
+
+filas = temp_matriz([1, end], :);
+columnas = temp_matriz(:, [1, end]);
+
+
+
+
+
+
+for i =1:size(posiciones_pares,1)
+    row = posiciones_pares(i,1);
+    col = posiciones_pares(i,2);
+    x1 = 1;
+    x = 2;
+    x2 = 3;
+    y1 = bayer_rojo_completo(row-1,col-1);
+    y2 = bayer_rojo_completo(row-1,col+1);
+    yfisrt = y1 + (x - x1) * (y2 - y1) / (x2 - x1);
+    y1 = bayer_rojo_completo(row+1,col-1);
+    y2 = bayer_rojo_completo(row+1,col+1);
+    ysecond = y1 + (x - x1) * (y2 - y1) / (x2 - x1);
+    ysecond = yfisrt + (x - x1) * (ysecond - yfisrt) / (x2 - x1);
+    bayer_rojo_completo(row,col) = ysecond;
+end 
