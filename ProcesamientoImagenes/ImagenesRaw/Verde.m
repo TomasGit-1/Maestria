@@ -18,15 +18,6 @@ bayer_verde1_completo = interpolacion_bilinealCruz(bayer_verde1_completo, posici
 posiciones_impares = [pos_filas_ceros(mod(pos_filas_ceros, 2) ~= 0), pos_columnas_ceros(mod(pos_columnas_ceros, 2) ~= 0)];
 bayer_verde1_completo = interpolacion_bilineal(bayer_verde1_completo, posiciones_impares);
 
-
-
-
-
-
-
-%codifo 
-disp("Funciones");
-
 function bayer_completo = interpolarasignar(bayer_completo,filas)
     % Iterar sobre las filas de la matriz
     for i = 1:size(filas, 1)
@@ -62,6 +53,36 @@ function bayer_completo = interpolarasignar_columnas(bayer_completo,columnas)
 end
 
 function bayer_completo_temp = interpolacion_bilineal(bayer_completo_temp, posiciones)
+    x1 = 1;
+    x = 2;
+    x2 = 3;
+    % Extraer las coordenadas de las posiciones
+    rows = posiciones(:, 1);
+    cols = posiciones(:, 2);
+    
+    % Calcular los índices de los elementos en las posiciones superiores e inferiores
+    top_left_indices = sub2ind(size(bayer_completo_temp), rows-1, cols-1);
+    top_right_indices = sub2ind(size(bayer_completo_temp), rows-1, cols+1);
+    bottom_left_indices = sub2ind(size(bayer_completo_temp), rows+1, cols-1);
+    bottom_right_indices = sub2ind(size(bayer_completo_temp), rows+1, cols+1);
+    
+    % Obtener los valores en las posiciones superiores e inferiores
+    y1_top_left = bayer_completo_temp(top_left_indices);
+    y2_top_right = bayer_completo_temp(top_right_indices);
+    y1_bottom_left = bayer_completo_temp(bottom_left_indices);
+    y2_bottom_right = bayer_completo_temp(bottom_right_indices);
+    
+    % Interpolación lineal en las posiciones superiores e inferiores
+    y_first = y1_top_left + (x - x1) * (y2_top_right - y1_top_left) / (x2 - x1);
+    y_second = y1_bottom_left + (x - x1) * (y2_bottom_right - y1_bottom_left) / (x2 - x1);
+    
+    % Interpolación bilineal
+    y_second = y_first + (x - x1) * (y_second - y_first) / (x2 - x1);
+    
+    % Asignar los valores interpolados a las posiciones actuales en la matriz
+    bayer_completo_temp(sub2ind(size(bayer_completo_temp), rows, cols)) = y_second;
+
+    %{
     % Coordenadas para la interpolación
     x1 = 1;
     x = 2;
@@ -85,9 +106,35 @@ function bayer_completo_temp = interpolacion_bilineal(bayer_completo_temp, posic
         % Asignar el valor interpolado a la posición actual en la matriz
         bayer_completo_temp(row, col) = y_second;
     end
+    %}
 end
 
 function bayer_completo_temp = interpolacion_bilinealCruz(bayer_completo_temp, posiciones) 
+    % Obtener las coordenadas para la interpolación
+    x1 = 1;
+    x = 2;
+    x2 = 3;
+    
+    % Extraer las coordenadas de las posiciones
+    rows = posiciones(:, 1);
+    cols = posiciones(:, 2);
+    
+    % Interpolación lineal en la fila superior
+    y1 = bayer_completo_temp(sub2ind(size(bayer_completo_temp), rows, cols-1));
+    y2 = bayer_completo_temp(sub2ind(size(bayer_completo_temp), rows-1, cols));
+    y_first = y1 + (x - x1) * (y2 - y1) / (x2 - x1);
+    
+    % Interpolación lineal en la fila inferior
+    y1 = bayer_completo_temp(sub2ind(size(bayer_completo_temp), rows+1, cols));
+    y2 = bayer_completo_temp(sub2ind(size(bayer_completo_temp), rows, cols+1));
+    y_second = y1 + (x - x1) * (y2 - y1) / (x2 - x1);
+    
+    % Interpolación bilineal
+    y_second = y_first + (x - x1) * (y_second - y_first) / (x2 - x1);
+    
+    % Asignar los valores interpolados a las posiciones actuales en la matriz
+    bayer_completo_temp(sub2ind(size(bayer_completo_temp), rows, cols)) = y_second;
+    %{
     % Coordenadas para la interpolación
     x1 = 1;
     x = 2;
@@ -109,6 +156,7 @@ function bayer_completo_temp = interpolacion_bilinealCruz(bayer_completo_temp, p
         % Asignar el valor interpolado a la posición actual en la matriz
         bayer_completo_temp(row, col) = y_second;
     end
+    %}
 end
 
 

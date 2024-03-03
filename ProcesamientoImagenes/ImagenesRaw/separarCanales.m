@@ -18,7 +18,7 @@ bayer_verde1_completo(1:2:end, 2:2:end) = bayer_verde1;
 bayer_verde2 = bayer_balance_blancos(2:2:end, 1:2:end); 
 [filas, columnas] = size(bayer_verde2);
 bayer_verde2_completo = zeros(filas * 2, columnas * 2, 'like', bayer_verde2);
-bayer_verde2_completo(2:2:end, 1:2:end) = bayer_verde2;
+%bayer_verde2_completo(2:2:end, 1:2:end) = bayer_verde2;
 bayer_verde1_completo(2:2:end, 1:2:end) = bayer_verde2;
 
 %Seleccionando Filas pares y Columnnas impares pero aumentando 2
