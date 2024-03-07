@@ -1,9 +1,3 @@
-fileName = 'Imagenes/paisaje.ARW';
-bayerImage = rawread(fileName);
-bayerInfo = rawinfo(fileName)
-cameraToRGB = bayerInfo.ColorInfo.CameraTosRGB
-%Definimos las matriz a utilizar
-bayer_rggb = uint16([800,800;800,800]);
 %Procesos para obtener verdadero black
 %subBayer = bayerImage(500:1800, 500:1800);
 %subBayer = bayerImage(1:10, 1:10);

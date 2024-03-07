@@ -47,3 +47,20 @@ matriz_interpolada_temp = bayer_rojo_completo;
 matriz_interpolada_temp(indices_interpolar) = valores_interpolar_redimensionados;
 % Combinar la matriz temporal con la matriz original para obtener la matriz interpolada final
 matriz_interpolada = matriz_interpolada_temp;
+
+
+
+    y1 = sub2ind(size(bayer_completo_temp), rows, cols-1);
+    y2 = sub2ind(size(bayer_completo_temp), rows-1, cols);
+    y_first = y1 + (x - x1) * (y2 - y1) / (x2 - x1);
+    
+    % Interpolación lineal en la fila inferior
+    y1 = sub2ind(size(bayer_completo_temp), rows+1, cols);
+    y2 = (sub2ind(size(bayer_completo_temp), rows, cols+1);
+    y_second = y1 + (x - x1) * (y2 - y1) / (x2 - x1);
+    
+    % Interpolación bilineal
+    y_second = y_first + (x - x1) * (y_second - y_first) / (x2 - x1);
+    
+    % Asignar los valores interpolados a las posiciones actuales en la matriz
+    bayer_completo_temp(sub2ind(size(bayer_completo_temp), rows, cols)) = y_second;

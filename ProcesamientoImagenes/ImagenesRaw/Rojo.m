@@ -138,16 +138,21 @@ function bayer_completo_temp = interpolacion_bilinealCruz(bayer_completo_temp, p
     % Extraer las coordenadas de las posiciones
     rows = posiciones(:, 1);
     cols = posiciones(:, 2);
+    % Calcular los índices de los elementos en las posiciones superiores e inferiores
+    top_left_indices = sub2ind(size(bayer_completo_temp), rows, cols-1);
+    top_right_indices = sub2ind(size(bayer_completo_temp), rows-1, cols);
+    bottom_left_indices = sub2ind(size(bayer_completo_temp), rows+1, cols);
+    bottom_right_indices = sub2ind(size(bayer_completo_temp), rows, cols+1);
     
-    % Interpolación lineal en la fila superior
-    y1 = bayer_completo_temp(sub2ind(size(bayer_completo_temp), rows, cols-1));
-    y2 = bayer_completo_temp(sub2ind(size(bayer_completo_temp), rows-1, cols));
-    y_first = y1 + (x - x1) * (y2 - y1) / (x2 - x1);
+    % Obtener los valores en las posiciones superiores e inferiores
+    y1_top_left = bayer_completo_temp(top_left_indices);
+    y2_top_right = bayer_completo_temp(top_right_indices);
+    y1_bottom_left = bayer_completo_temp(bottom_left_indices);
+    y2_bottom_right = bayer_completo_temp(bottom_right_indices);
     
-    % Interpolación lineal en la fila inferior
-    y1 = bayer_completo_temp(sub2ind(size(bayer_completo_temp), rows+1, cols));
-    y2 = bayer_completo_temp(sub2ind(size(bayer_completo_temp), rows, cols+1));
-    y_second = y1 + (x - x1) * (y2 - y1) / (x2 - x1);
+    % Interpolación lineal en las posiciones superiores e inferiores
+    y_first = y1_top_left + (x - x1) * (y2_top_right - y1_top_left) / (x2 - x1);
+    y_second = y1_bottom_left + (x - x1) * (y2_bottom_right - y1_bottom_left) / (x2 - x1);
     
     % Interpolación bilineal
     y_second = y_first + (x - x1) * (y_second - y_first) / (x2 - x1);
