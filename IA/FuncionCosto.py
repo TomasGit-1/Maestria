@@ -35,7 +35,7 @@ def graficar(puntos=[],valoresW=[]):
         print(f"Error graficando {e}")
 
 if __name__ == '__main__':
-    train,valoresW = [(1,1),(2,2),(3,3)],[-0.25,-0.5,0.5,0.8,1.25,1.5,2,3]
+    train,valoresW = [(1,1),(2,2),(3,3)],[-0.25,-0.5,0.5,0.8,1.25,1.5,2,3,0,-0.8]
     predicciones = []
     predicciones.append([train,[0,0]])
     for i in range(len(valoresW)):

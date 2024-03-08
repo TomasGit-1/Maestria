@@ -6,11 +6,14 @@ cameraToRGB = bayerInfo.ColorInfo.CameraTosRGB;
 bayer_rggb = uint16([800,800;800,800]);
 balanceB = [2.964,1; 1, 1.832];
 %subBayer = bayerImage(500:1800, 500:1800);
-subBayer = bayerImage(1:400, 1:400);
+
+subBayer = bayerImage(800:805, 800:805);
+
 %subBayer = bayerImage
 
 bayerNomalizado = normalizate_bayer(subBayer,bayer_rggb);
 bayerBalanceB = balance_blancos(bayerNomalizado,balanceB);
+
 
 bayerRojo = separar_rojo(bayerBalanceB);
 bayerRI = interpolacionRojo(bayerRojo);
@@ -24,7 +27,36 @@ bayerAI = interpolacionAzul(bayerAzul);
 bayerColor = espacionRGB(bayerRI, bayerVI, bayerAI, cameraToRGB );
 bayerColor =generate_gamma(bayerColor);
 
-imnprimir(subBayer, bayerNomalizado, bayerBalanceB, bayerRojo, bayerVerde,bayerAzul, bayerRI,bayerVI,bayerAI,bayerColor);
+figure(1)
+    subplot(2, 2, 1);
+    imshow(bayerNomalizado, []);
+    title('Imagen normalizada');
+
+    subplot(2, 2, 2);
+    imshow(bayerBalanceB, []);
+    title('Balance de blancos');
+%{
+figure(2)
+    imshow(cat(2, bayerVerde, bayerVI));
+    title("Canal Verde");
+
+figure(3)
+    imshow(cat(2, bayerAzul, bayerAI));
+    title("Canal Azul")
+
+figure(4)
+    imagenColor1 = cat(3, bayerRojo, bayerVerde, bayerAzul);  
+    imshow(imagenColor);
+
+figure(4)
+    imagenColor2 = cat(3, bayerRojo, bayerVerde, bayerAzul);  
+    imshow(imagenColor)
+
+figure(5)
+    imshow(bayerColor);
+%}
+
+%imnprimir(subBayer, bayerNomalizado, bayerBalanceB, bayerRojo, bayerVerde,bayerAzul, bayerRI,bayerVI,bayerAI,bayerColor);
 
 function bayerNormalizate = normalizate_bayer(subBayer,bayer_rggbT)
     funcion_resta = @(block_struct) block_struct.data - bayer_rggbT;
@@ -90,11 +122,9 @@ function bayerVI =  interpolacionVerde(bayerVI)
 
     filas = bayerVI([1, end], :);
     columnas = bayerVI(:, [1, end]);
-    bayerVI = interpolar_bordes(bayerVI);
-    
     bayerVI(1,1) =  bayerVI(1,2);
     bayerVI(end,end) =  bayerVI(end-1);
-
+    bayerVI = interpolar_bordes(bayerVI);
     [pos_filas_ceros, pos_columnas_ceros] = find(bayerVI == 0);
     posiciones = [pos_filas_ceros, pos_columnas_ceros];
     %rowcolP = posiciones(all(mod(posiciones, 2) == 0, 2), :);
@@ -130,44 +160,53 @@ function bayerAI = interpolacionAzul(bayerAI)
     bayer_filas_pares_interp = interpolar(bayer_filas_pares, indices_ceros);
     
     % Actualizar las filas interpoladas en la matriz original
-    bayerAI(filas_con_cero, :) = bayer_filas_pares_interp;
-    
-    %{
-    for i = 1:size(bayer_filas_pares, 1)
-        fila_actual = bayer_filas_pares(i, :);
-        indice = filas_con_cero(i);
-        indices_ceros = (fila_actual == 0);
-        fila_interp = interpolar(fila_actual, indices_ceros);
-        bayerAI(indice,:) = fila_interp 
-    end
-    %}
-    
+    bayerAI(filas_con_cero, :) = bayer_filas_pares_interp;   
     [pos_filas_ceros, pos_columnas_ceros] = find(bayerAI == 0);
     bayerAI = interpolacion_bilinealCruz(bayerAI, [pos_filas_ceros, pos_columnas_ceros] );
 end 
 
 function bayer = interpolar_bordes(bayer)    
     % Interpolar en el borde superior
-    indices_ceros = (bayer(1,:) == 0);
-    bayer(1,:) = interpolar(bayer(1,:), indices_ceros);
-    
+    bayer(1,:) = interpolar(bayer(1,:));
     % Interpolar en el borde inferior
-    indices_ceros = (bayer(end,:) == 0);
-    bayer(end, :) = interpolar(bayer(end,:), indices_ceros);
-    
+    bayer(end, :) = interpolar(bayer(end,:));
     % Interpolar en el borde izquierdo
-    indices_ceros = (bayer(:,1) == 0);
-    bayer(:, 1) = interpolar(bayer(:,1), indices_ceros);
-    
+    bayer(:, 1) = interpolar(bayer(:,1));    
     % Interpolar en el borde derecho
-    indices_ceros = (bayer(:,end) == 0);
-    bayer(:, end) = interpolar(bayer(:,end), indices_ceros);   
+    bayer(:, end) = interpolar(bayer(:,end));   
 end
 
-function valores_interp = interpolar(valores, indices_ceros)
-    indices_no_ceros = find(~indices_ceros);
+function valores_interp = interpolar(valores)
+    %indices_no_ceros = find(~indices_ceros);
+    %valores_interp = valores;
+    %valores_interp(indices_ceros) = interp1(indices_no_ceros, valores(indices_no_ceros), find(indices_ceros), 'linear');
+
+    % Encuentra los índices de los valores no cero y los valores cero en el vector
+    indices_no_ceros = find(valores ~= 0);
+    indices_ceros = find(valores == 0);
+    
+    % Encuentra los dos índices más cercanos que no son cero para cada valor cero
+    x0_indices = max(bsxfun(@lt, indices_no_ceros', indices_ceros), [], 1);
+    x1_indices = min(bsxfun(@gt, indices_no_ceros', indices_ceros), [], 1);
+    
+    % Obtiene los valores correspondientes de x0 y x1
+    x0 = indices_no_ceros(x0_indices);
+    x1 = indices_no_ceros(x1_indices);
+    
+    % Obtiene los valores de los puntos conocidos más cercanos
+    y0 = valores(x0);
+    y1 = valores(x1);
+    
+    % Realiza la interpolación utilizando interp1
+    interpolated_values = interp1([x0; x1], [y0; y1], indices_ceros);
     valores_interp = valores;
-    valores_interp(indices_ceros) = interp1(indices_no_ceros, valores(indices_no_ceros), find(indices_ceros), 'linear');
+
+    % Asigna los valores interpolados al vector original en las posiciones de los valores cero
+    valores_interp(indices_ceros) = interpolated_values;
+    
+    % Rellena los valores NaN con una interpolación adicional
+    nan_indices = isnan(valores_interp);
+    valores_interp(nan_indices) = interp1(indices_no_ceros, valores(indices_no_ceros), find(nan_indices), 'linear');
 end
 
 function bayer = interpolacion_bilineal(bayer, posiciones)
@@ -273,9 +312,9 @@ function imagenColor = generate_gamma(bayerColor)
     ColorA_corregido = ColorA .^ (1/gamma);
     
     % Asegurarse de que los valores estén en el rango [0, 1]
-    ColorR_corregido = min(max(ColorR_corregido, 0), 1);
-    ColorV_corregido = min(max(ColorV_corregido, 0), 1);
-    ColorA_corregido = min(max(ColorA_corregido, 0), 1);
+    %ColorR_corregido = min(max(ColorR_corregido, 0), 1);
+    %ColorV_corregido = min(max(ColorV_corregido, 0), 1);
+    %ColorA_corregido = min(max(ColorA_corregido, 0), 1);
     
     % Mostrar los resultados
     imagenColor = cat(3, ColorR_corregido, ColorV_corregido, ColorA_corregido);    
