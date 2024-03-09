@@ -5,11 +5,11 @@ cameraToRGB = bayerInfo.ColorInfo.CameraTosRGB;
 %Definimos las matriz a utilizar
 bayer_rggb = uint16([800,800;800,800]);
 balanceB = [2.964,1; 1, 1.832];
-%subBayer = bayerImage(500:1800, 500:1800);
+%subBayer = bayerImage(500:1000, 500:1000);
 
-subBayer = bayerImage(800:805, 800:805);
+subBayer = bayerImage(1:10, 1:10);
 
-%subBayer = bayerImage
+%subBayer = bayerImage;
 
 bayerNomalizado = normalizate_bayer(subBayer,bayer_rggb);
 bayerBalanceB = balance_blancos(bayerNomalizado,balanceB);
@@ -27,6 +27,8 @@ bayerAI = interpolacionAzul(bayerAzul);
 bayerColor = espacionRGB(bayerRI, bayerVI, bayerAI, cameraToRGB );
 bayerColor =generate_gamma(bayerColor);
 
+%{
+
 figure(1)
     subplot(2, 2, 1);
     imshow(bayerNomalizado, []);
@@ -35,7 +37,7 @@ figure(1)
     subplot(2, 2, 2);
     imshow(bayerBalanceB, []);
     title('Balance de blancos');
-%{
+
 figure(2)
     imshow(cat(2, bayerVerde, bayerVI));
     title("Canal Verde");
@@ -56,7 +58,7 @@ figure(5)
     imshow(bayerColor);
 %}
 
-%imnprimir(subBayer, bayerNomalizado, bayerBalanceB, bayerRojo, bayerVerde,bayerAzul, bayerRI,bayerVI,bayerAI,bayerColor);
+imnprimir(subBayer, bayerNomalizado, bayerBalanceB, bayerRojo, bayerVerde,bayerAzul, bayerRI,bayerVI,bayerAI,bayerColor);
 
 function bayerNormalizate = normalizate_bayer(subBayer,bayer_rggbT)
     funcion_resta = @(block_struct) block_struct.data - bayer_rggbT;
@@ -115,6 +117,8 @@ function bayerRI = interpolacionRojo(bayerRI)
     bayerRI = interpolacion_bilineal(bayerRI, rowcolP);
     %Pasamos el resto de posiciones
     [pos_filas_ceros, pos_columnas_ceros] = find(bayerRI == 0);
+    posiciones = [pos_filas_ceros, pos_columnas_ceros];
+
     bayerRI = interpolacion_bilinealCruz(bayerRI, [pos_filas_ceros, pos_columnas_ceros]);
 end
 
@@ -156,8 +160,8 @@ function bayerAI = interpolacionAzul(bayerAI)
     bayer_filas_pares = bayerAI(filas_con_cero, :);
 
     % Interpolar las filas pares que tienen al menos un 0
-    indices_ceros = (bayer_filas_pares == 0);
-    bayer_filas_pares_interp = interpolar(bayer_filas_pares, indices_ceros);
+
+    bayer_filas_pares_interp = interpolar(bayer_filas_pares);
     
     % Actualizar las filas interpoladas en la matriz original
     bayerAI(filas_con_cero, :) = bayer_filas_pares_interp;   
@@ -209,10 +213,39 @@ function valores_interp = interpolar(valores)
     valores_interp(nan_indices) = interp1(indices_no_ceros, valores(indices_no_ceros), find(nan_indices), 'linear');
 end
 
+function bayer = interpolacion_bilinealCruz(bayer, posiciones) 
+    % Extraer las coordenadas de las posiciones
+    rows = posiciones(:, 1);
+    cols = posiciones(:, 2);
+    % Calcular los índices de los elementos en las posiciones superiores e inferiores
+    top_left_indices = sub2ind(size(bayer), rows, cols-1);
+    top_right_indices = sub2ind(size(bayer), rows-1, cols);
+    bottom_left_indices = sub2ind(size(bayer), rows+1, cols);
+    bottom_right_indices = sub2ind(size(bayer), rows, cols+1);
+    
+     
+    % Obtener los valores en las posiciones superiores e inferiores
+    y1_top_left = bayer(top_left_indices);
+    y2_top_right = bayer(top_right_indices);
+    y1_bottom_left = bayer(bottom_left_indices);
+    y2_bottom_right = bayer(bottom_right_indices);
+    
+    % Interpolación lineal en las posiciones superiores e inferiores
+    x1 = cols-1;
+    x2 = cols;
+    x = cols;
+    y_first = y1_top_left + (x - x1) .* (y2_top_right - y1_top_left) ./ (x2 - x1);
+    x1 = cols;
+    x2 = cols+1;
+    y_second = y1_bottom_left + (x - x1) .* (y2_bottom_right - y1_bottom_left) ./ (x2 - x1);
+    % Interpolación bilineal
+    y_second = y_first + (x - x1) .* (y_second - y_first) ./ (x2 - x1);
+    % Asignar los valores interpolados a las posiciones actuales en la matriz
+    bayer(sub2ind(size(bayer), rows, cols)) = y_second;     
+end
+
 function bayer = interpolacion_bilineal(bayer, posiciones)
-    x1 = 1;
-    x = 2;
-    x2 = 3;
+  
     % Extraer las coordenadas de las posiciones
     rows = posiciones(:, 1);
     cols = posiciones(:, 2);
@@ -230,46 +263,18 @@ function bayer = interpolacion_bilineal(bayer, posiciones)
     y2_bottom_right = bayer(bottom_right_indices);
     
     % Interpolación lineal en las posiciones superiores e inferiores
-    y_first = y1_top_left + (x - x1) * (y2_top_right - y1_top_left) / (x2 - x1);
-    y_second = y1_bottom_left + (x - x1) * (y2_bottom_right - y1_bottom_left) / (x2 - x1);
+    x1 = cols-1;
+    x2 = cols+1;
+    x = cols;
+
+    y_first = y1_top_left + (x - x1) .* (y2_top_right - y1_top_left) ./ (x2 - x1);
+    y_second = y1_bottom_left + (x - x1) .* (y2_bottom_right - y1_bottom_left) ./ (x2 - x1);
     
+    x = cols;
     % Interpolación bilineal
-    y_second = y_first + (x - x1) * (y_second - y_first) / (x2 - x1);
+    y_second = y_first + (x - x1) .* (y_second - y_first) ./ (x2 - x1);
     % Asignar los valores interpolados a las posiciones actuales en la matriz
     bayer(sub2ind(size(bayer), rows, cols)) = y_second;
-end
-
-function bayer = interpolacion_bilinealCruz(bayer, posiciones) 
-
-    % Obtener las coordenadas para la interpolación
-    x1 = 1;
-    x = 2;
-    x2 = 3;
-    
-    % Extraer las coordenadas de las posiciones
-    rows = posiciones(:, 1);
-    cols = posiciones(:, 2);
-    % Calcular los índices de los elementos en las posiciones superiores e inferiores
-    x1_top_left_indices = sub2ind(size(bayer), rows, cols-1);
-    x2_top_right_indices = sub2ind(size(bayer), rows-1, cols);
-    x1_bottom_left_indices = sub2ind(size(bayer), rows+1, cols);
-    x2_bottom_right_indices = sub2ind(size(bayer), rows, cols+1);
-    
-    % Obtener los valores en las posiciones superiores e inferiores
-    y1_top_left = bayer(x1_top_left_indices);
-    y2_top_right = bayer(x2_top_right_indices);
-    y1_bottom_left = bayer(x1_bottom_left_indices);
-    y2_bottom_right = bayer(x2_bottom_right_indices);
-
-     % Interpolación lineal en las posiciones superiores e inferiores
-    y_first = y1_top_left + (x - x1) * (y2_top_right - y1_top_left) / (x2 - x1);
-    y_second = y1_bottom_left + (x - x1) * (y2_bottom_right - y1_bottom_left) / (x2 - x1);
-    
-    % Interpolación bilineal
-    y_second = y_first + (x - x1) * (y_second - y_first) / (x2 - x1);
-    % Asignar los valores interpolados a las posiciones actuales en la matriz
-    bayer(sub2ind(size(bayer), rows, cols)) = y_second;
-    
 end
 
 function bayer3D = espacionRGB(bayerRI, bayerVI, bayerAI, cameraToRGB)
