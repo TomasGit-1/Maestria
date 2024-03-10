@@ -4,7 +4,12 @@ vec = [1,2,3,4,5,6;
        1,0,3,4,0,6;
        1,2,3,4,5,6];
 
-vec = [0.1874,0.18415,0.1809,0.18415;]
+%vec = [0.1874,0.18415,0.1809,0.18415;]
+vec = [0.1874,0,0.18415,0.1809,0,0.18415;];
+vec = [ 1.1070    ,1.1070         ,0    ,1.2964         ,0    ,1.8880]
+vec = [ 1.4449  ,  1.4449     ,    0   , 1.7916         ,0    ,1.1171]
+
+   
 
 % Encuentra los índices de los valores 0
 indices_ceros = find(vec == 0);
@@ -23,7 +28,7 @@ for i = 1:length(indices_ceros)
     % Asigna el valor interpolado al valor 0 en el vector
     vec(zero_index) = interpolated_value;
 end
-
+disp(vec);
 %{
 % Para cada valor 0, calcula el valor interpolado
 for i = 1:length(indices_ceros)
@@ -62,16 +67,21 @@ disp(vec2);
 
 
 
+
 % Vector dado
-vec3 = [1,0,3,0,4,1,0,3,0,4];
+%vec3 = [1,0,3,0,4,1,0,3,0,4];
+vec3 = [0.1874,0,0.18415,0.1809,0,0.18415;]
 
 % Encuentra los índices de los valores no cero y los valores cero en el vector
 indices_no_ceros = find(vec3 ~= 0);
 indices_ceros = find(vec3 == 0);
 
 % Encuentra los dos índices más cercanos que no son cero para cada valor cero
-x0_indices = max(bsxfun(@lt, indices_no_ceros', indices_ceros), [], 1);
-x1_indices = min(bsxfun(@gt, indices_no_ceros', indices_ceros), [], 1);
+%Rx0_indices = max(bsxfun(@lt, indices_no_ceros', indices_ceros), [], 1);
+%x1_indices = min(bsxfun(@gt, indices_no_ceros', indices_ceros), [], 1);
+
+left_indices = sub2ind(size(vec3), rows, cols);
+right_indices = sub2ind(size(vec3), rows-1, cols+1);
 
 % Obtiene los valores correspondientes de x0 y x1
 x0 = indices_no_ceros(x0_indices);
@@ -96,4 +106,3 @@ disp(vec3);
 disp(vec3);
 
 %}
-
