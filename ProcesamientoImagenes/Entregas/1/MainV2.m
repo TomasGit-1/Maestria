@@ -6,7 +6,6 @@ cameraToRGB = bayerInfo.ColorInfo.CameraTosRGB;
 bayer_rggb = uint16([800,800;800,800]);
 balanceB = [2.964,1; 1, 1.832];
 %subBayer = bayerImage(500:1800, 500:2000);
-
 %subBayer = bayerImage(1000:1006, 1000:1006);
 
 subBayer = bayerImage;
@@ -18,17 +17,21 @@ bayerRojo = separar_rojo(bayerBalanceB);
 bayerVerde = separarVerde(bayerBalanceB);
 bayerAzul = separarAzul(bayerBalanceB);
 
+sigma = 3; % Parámetro de desviación estándar del filtro Gaussiano
 
 bayerRI = interpolacionRojo(bayerRojo);
-%bayerRI = bayerRI .* 0.6;
+canal_verde_suavizado = imgaussfilt(bayerRI, sigma);
+bayerRI = canal_verde_suavizado;
 
 bayerVI = interpolacionVerde(bayerVerde);
-%bayerVI(bayerVI > 2) = 2000;
-%ventana = ones(3) / 9; % Filtro de media 3x3
-%bayerVI = conv2(bayerVI, ventana, 'same');
-bayerVI = bayerVI .* 0.8;
+canal_verde_suavizado = imgaussfilt(bayerVI, sigma);
+bayerVI = canal_verde_suavizado;
+bayerVI = bayerVI * 0.8;
 
 bayerAI = interpolacionAzul(bayerAzul);
+canal_verde_suavizado = imgaussfilt(bayerAI, sigma);
+bayerAI = canal_verde_suavizado;
+
 
 bayerColorAG = espacionRGB(bayerRI, bayerVI, bayerAI, cameraToRGB );
 bayerColor =generate_gamma(bayerColorAG);
@@ -46,11 +49,9 @@ figure()
 figure()
     imshow(bayerRI);
     title("Canal Rojo");
-
 figure()
     imshow(bayerVI);
     title("Canal Verde");
-
 figure()
     imshow(bayerAI);
     title("Canal Azul");
@@ -154,19 +155,7 @@ function bayerAI = interpolacionAzul(bayerAI)
     end
     filas = bayerAI([1, end], :);
     columnas = bayerAI(:, [1, end]);
-    bayerAI = interpolar_bordes(bayerAI);
-   
-    %{
-    %Aplicamos lineal a las filas pares
-    filas_pares = 2:2:size(bayerAI, 1);
-    filas_con_cero = filas_pares(any(bayerAI(filas_pares, :) == 0, 2));
-    bayer_filas_pares = bayerAI(filas_con_cero, :);
-    % Interpolar las filas pares que tienen al menos un 0
-    bayer_filas_pares_interp = interpolar(bayer_filas_pares);
-    % Actualizar las filas interpoladas en la matriz original
-    bayerAI(filas_con_cero, :) = bayer_filas_pares_interp;   
-    %}
-    
+    bayerAI = interpolar_bordes(bayerAI); 
     % Obtener las posiciones de los elementos iguales a cero
     [pos_filas_ceros, pos_columnas_ceros] = find(bayerAI == 0);
     % Obtener las posiciones de las filas impares
@@ -208,9 +197,6 @@ function valores = interpolar(valores)
 end
 
 function valores_interp = interpolarbsxfun(valores)
-    %indices_no_ceros = find(~indices_ceros);
-    %valores_interp = valores;
-    %valores_interp(indices_ceros) = interp1(indices_no_ceros, valores(indices_no_ceros), find(indices_ceros), 'linear');
 
     % Encuentra los índices de los valores no cero y los valores cero en el vector
     indices_no_ceros = find(valores ~= 0);
@@ -311,67 +297,21 @@ function bayer3D = espacionRGB(bayerRI, bayerVI, bayerAI, cameraToRGB)
     rgb_reshaped = cameraToRGB * bayer_reshaped;
     bayer3D = reshape(rgb_reshaped', filas, columnas, []);
     %bayer3D(bayer3D < 0) = 0;
-
-    
-    %ColorR = rgb(:, :, 1);
-    %ColorV = rgb(:, :, 2);
-    %ColorA = rgb(:, :, 3);
-    %{
-    ColorR = zeros(filas, columnas);
-    ColorV = zeros(filas, columnas);
-    ColorA = zeros(filas, columnas);    
-    for i = 1:filas
-        for j = 1:columnas
-            r = bayerRI(i,j);
-            v = bayerVI(i, j);
-            b = bayerAI(i, j);
-            rgb = [r; v;b];
-            rgb = cameraToRGB * rgb;
-            ColorR(i,j) = rgb(1);
-            ColorV(i,j) = rgb(2);
-            ColorA(i,j) = rgb(3);
-        end
-    end
-    %}
 end
 
 function imagenColor = generate_gamma(bayerColor) 
-
-    ColorR = bayerColor(:,:,1);
-    ColorV = bayerColor(:,:,2);
-    ColorA = bayerColor(:,:,3);
- %{
-    bayer3D_corregido = zeros(size(bayerColor)); % Inicializar matriz para el resultado corregido
-    gamma_R = 2.2; % Corrección de gamma para el canal R (rojo)
-    gamma_G = 2.2; % Corrección de gamma para el canal G (verde)
-    gamma_B = 2.2; % Corrección de gamma para el canal B (azul)
-    bayer3D_corregido(:,:,1) = (double(bayerColor(:,:,1)) / 255) .^ gamma_R * 255; % Canal R
-    bayer3D_corregido(:,:,2) = (double(bayerColor(:,:,2)) / 255) .^ gamma_G * 255; % Canal G
-    bayer3D_corregido(:,:,3) = (double(bayerColor(:,:,3)) / 255) .^ gamma_B * 255; % Canal B
-    imagenColor = uint8(bayer3D_corregido);
-    %imshowpair(bayerColor, bayer3D_corregido, 'montage');
-    ColorR = bayerColor(:,:,1);
-    ColorV = bayerColor(:,:,2);
-    ColorA = bayerColor(:,:,3);
- %  Aplicar la corrección gamma a cada píxel
-    % Aplicar la corrección gamma a cada canal de color
-    %ColorR_corregido = ColorR .^ (gamma);
-    %ColorV_corregido = ColorV .^ (gamma);
-    %ColorA_corregido = ColorA .^ (gamma);
-    
-    %ColorR_corregido = ColorR_corregido / max(ColorR_corregido(:));
-    %ColorV_corregido = ColorV_corregido / max(ColorV_corregido(:));
-    %ColorA_corregido = ColorA_corregido / max(ColorA_corregido(:));
-    % Mostrar los resultados
-    %imagenColor = cat(3, ColorR_corregido, ColorV_corregido, ColorA_corregido); 
-
     %gamma = 1/2.222;
-    gamma = 0.5;
+    gamma = 0.7;
     a_max = max(bayerColor(:));
-    bayerColor = (bayerColor / a_max) .^ gamma * a_max;
+    bayerColor(:,:,1) = bayerColor(:,:,1) .^ gamma;
+    % Corrección gamma para el canal verde
+    bayerColor(:,:,2) = bayerColor(:,:,2) .^ gamma;
+    % Corrección gamma para el canal azul
+    bayerColor(:,:,3) = bayerColor(:,:,3).^ gamma;
+
+    %bayerColor = (double(bayerColor) / 255) .^ gamma * 255; % Canal G
+    %bayerColor = (bayerColor/a_max ).^ gamma;
     imagenColor = bayerColor;
- %}
-   
 end
 
 function imnprimir(subBayer, bayerNomalizado, bayerBalanceB, bayerRojo, bayerVerde,bayerAzul, bayerRI,bayerVI,bayerAI,bayerColor)
