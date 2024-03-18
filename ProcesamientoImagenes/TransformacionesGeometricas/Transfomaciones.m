@@ -104,6 +104,8 @@ function imgSesgado = sesgado(img, a)
     end
 end
 
+
+
 function imgRotacion = rotacion(img,a)
 
   % Calcular el centro de la imagen
