@@ -1,0 +1,99 @@
+PMID- 38148822
+OWN - NLM
+STAT- PubMed-not-MEDLINE
+LR  - 20231228
+IS  - 2405-8440 (Print)
+IS  - 2405-8440 (Electronic)
+IS  - 2405-8440 (Linking)
+VI  - 10
+IP  - 1
+DP  - 2024 Jan 15
+TI  - Automated sign language detection and classification using reptile search 
+      algorithm with hybrid deep learning.
+PG  - e23252
+LID - 10.1016/j.heliyon.2023.e23252 [doi]
+LID - e23252
+AB  - Sign language recognition (SLR) contains the capability to convert sign language 
+      gestures into spoken or written language. This technology is helpful for deaf 
+      persons or hard of hearing by providing them with a way to interact with people 
+      who do not know sign language. It is also be utilized for automatic captioning in 
+      live events and videos. There are distinct methods of SLR comprising deep 
+      learning (DL), computer vision (CV), and machine learning (ML). One general 
+      approach utilises cameras for capturing the signer's hand and body movements and 
+      processing the video data for recognizing the gestures. One of challenges with 
+      SLR comprises the variability in sign language through various cultures and 
+      individuals, the difficulty of certain signs, and require for realtime 
+      processing. This study introduces an Automated Sign Language Detection and 
+      Classification using Reptile Search Algorithm with Hybrid Deep Learning 
+      (SLDC-RSAHDL). The presented SLDC-RSAHDL technique detects and classifies 
+      different types of signs using DL and metaheuristic optimizers. In the 
+      SLDC-RSAHDL technique, MobileNet feature extractor is utilized to produce feature 
+      vectors, and its hyperparameters can be adjusted by manta ray foraging 
+      optimization (MRFO) technique. For sign language classification, the SLDC-RSAHDL 
+      technique applies HDL model, which incorporates the design of Convolutional 
+      Neural Network (CNN) and Long-Short Term Memory (LSTM). At last, the RSA was 
+      exploited for the optimal hyperparameter selection of the HDL model, which 
+      resulted in an improved detection rate. The experimental result analysis of the 
+      SLDC-RSAHDL technique on sign language dataset demonstrates the improved 
+      performance of the SLDC-RSAHDL system over other existing DL techniques.
+CI  - © 2023 The Authors.
+FAU - Alsolai, Hadeel
+AU  - Alsolai H
+AD  - Department of Information Systems, College of Computer and Information Sciences, 
+      Princess Nourah bint Abdulrahman University, P.O. Box 84428, Riyadh 11671, Saudi 
+      Arabia.
+FAU - Alsolai, Leen
+AU  - Alsolai L
+AD  - Department of Information Systems, College of Computer and Information Sciences, 
+      Princess Nourah bint Abdulrahman University, P.O. Box 84428, Riyadh 11671, Saudi 
+      Arabia.
+FAU - Al-Wesabi, Fahd N
+AU  - Al-Wesabi FN
+AD  - Department of Computer Science, College of Science & Art at Mahayil, King Khalid 
+      University, Saudi Arabia.
+FAU - Othman, Mahmoud
+AU  - Othman M
+AD  - Department of Computer Science, Faculty of Computers and Information Technology, 
+      Future University in Egypt New Cairo 11835, Egypt.
+FAU - Rizwanullah, Mohammed
+AU  - Rizwanullah M
+AD  - Department of Computer and Self Development, Preparatory Year Deanship, Prince 
+      Sattam bin Abdulaziz University, AlKharj, Saudi Arabia.
+FAU - Abdelmageed, Amgad Atta
+AU  - Abdelmageed AA
+AD  - Department of Computer and Self Development, Preparatory Year Deanship, Prince 
+      Sattam bin Abdulaziz University, AlKharj, Saudi Arabia.
+LA  - eng
+PT  - Journal Article
+DEP - 20231208
+PL  - England
+TA  - Heliyon
+JT  - Heliyon
+JID - 101672560
+PMC - PMC10750143
+OTO - NOTNLM
+OT  - Computer vision
+OT  - Deep learning
+OT  - Intelligent models
+OT  - Reptile search algorithm
+OT  - Sign language
+COIS- The authors declare that they have no conflict of interest. The manuscript was 
+      written through contributions of all authors. All authors have given approval to 
+      the final version of the manuscript.
+EDAT- 2023/12/27 06:41
+MHDA- 2023/12/27 06:42
+PMCR- 2023/12/08
+CRDT- 2023/12/27 03:34
+PHST- 2023/07/04 00:00 [received]
+PHST- 2023/11/27 00:00 [revised]
+PHST- 2023/11/29 00:00 [accepted]
+PHST- 2023/12/27 06:42 [medline]
+PHST- 2023/12/27 06:41 [pubmed]
+PHST- 2023/12/27 03:34 [entrez]
+PHST- 2023/12/08 00:00 [pmc-release]
+AID - S2405-8440(23)10460-9 [pii]
+AID - e23252 [pii]
+AID - 10.1016/j.heliyon.2023.e23252 [doi]
+PST - epublish
+SO  - Heliyon. 2023 Dec 8;10(1):e23252. doi: 10.1016/j.heliyon.2023.e23252. eCollection 
+      2024 Jan 15.

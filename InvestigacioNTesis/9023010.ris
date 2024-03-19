@@ -1,0 +1,21 @@
+TY  - JOUR
+A2  - Khalil, Ahmed Mostafa
+AU  - Khan, Rehman Ullah
+AU  - Khattak, Hizbullah
+AU  - Wong, Woei Sheng
+AU  - AlSalman, Hussain
+AU  - Mosleh, Mogeeb A. A.
+AU  - Mizanur Rahman, Sk. Md.
+PY  - 2021
+DA  - 2021/12/10
+TI  - Intelligent Malaysian Sign Language Translation System Using Convolutional-Based Attention Module with Residual Network
+SP  - 9023010
+VL  - 2021
+AB  - The deaf-mutes population always feels helpless when they are not understood by others and vice versa. This is a big humanitarian problem and needs localised solution. To solve this problem, this study implements a convolutional neural network (CNN), convolutional-based attention module (CBAM) to recognise Malaysian Sign Language (MSL) from images. Two different experiments were conducted for MSL signs, using CBAM-2DResNet (2-Dimensional Residual Network) implementing &#x201c;Within Blocks&#x201d; and &#x201c;Before Classifier&#x201d; methods. Various metrics such as the accuracy, loss, precision, recall, <i>F</i>1-score, confusion matrix, and training time are recorded to evaluate the models&#x2019; efficiency. The experimental results showed that CBAM-ResNet models achieved a good performance in MSL signs recognition tasks, with accuracy rates of over 90&#x0025; through a little of variations. The CBAM-ResNet &#x201c;Before Classifier&#x201d; models are more efficient than &#x201c;Within Blocks&#x201d; CBAM-ResNet models. Thus, the best trained model of CBAM-2DResNet is chosen to develop a real-time sign recognition system for translating from sign language to text and from text to sign language in an easy way of communication between deaf-mutes and other people. All experiment results indicated that the &#x201c;Before Classifier&#x201d; of CBAMResNet models is more efficient in recognising MSL and it is worth for future research.
+SN  - 1687-5265
+UR  - https://doi.org/10.1155/2021/9023010
+DO  - 10.1155/2021/9023010
+JF  - Computational Intelligence and Neuroscience
+PB  - Hindawi
+KW  - 
+ER  - 

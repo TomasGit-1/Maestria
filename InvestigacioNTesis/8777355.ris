@@ -1,0 +1,21 @@
+TY  - JOUR
+A2  - Kumar, Vijay
+AU  - Alnuaim, Abeer
+AU  - Zakariah, Mohammed
+AU  - Hatamleh, Wesam Atef
+AU  - Tarazi, Hussam
+AU  - Tripathi, Vikas
+AU  - Amoatey, Enoch Tetteh
+PY  - 2022
+DA  - 2022/03/26
+TI  - Human-Computer Interaction with Hand Gesture Recognition Using ResNet and MobileNet
+SP  - 8777355
+VL  - 2022
+AB  - Sign language is the native language of deaf people, which they use in their daily life, and it facilitates the communication process between deaf people. The problem faced by deaf people is targeted using sign language technique. Sign language refers to the use of the arms and hands to communicate, particularly among those who are deaf. This varies depending on the person and the location from which they come. As a result, there is no standardization about the sign language to be used; for example, American, British, Chinese, and Arab sign languages are all distinct. Here, in this study we trained a model, which will be able to classify the Arabic sign language, which consists of 32 Arabic alphabet sign classes. In images, sign language is detected through the pose of the hand. In this study, we proposed a framework, which consists of two CNN models, and each of them is individually trained on the training set. The final predictions of the two models were ensembled to achieve higher results. The dataset used in this study is released in 2019 and is called as ArSL2018. It is launched at the Prince Mohammad Bin Fahd University, Al Khobar, Saudi Arabia. The main contribution in this study is resizing the images to 64&#x2009;&#x2217;&#x2009;64 pixels, converting from grayscale images to three-channel images, and then applying the median filter to the images, which acts as lowpass filtering in order to smooth the images and reduce noise and to make the model more robust to avoid overfitting. Then, the preprocessed image is fed into two different models, which are ResNet50 and MobileNetV2. ResNet50 and MobileNetV2 architectures were implemented together. The results we achieved on the test set for the whole data are with an accuracy of about 97&#x0025; after applying many preprocessing techniques and different hyperparameters for each model, and also different data augmentation techniques.
+SN  - 1687-5265
+UR  - https://doi.org/10.1155/2022/8777355
+DO  - 10.1155/2022/8777355
+JF  - Computational Intelligence and Neuroscience
+PB  - Hindawi
+KW  - 
+ER  - 
