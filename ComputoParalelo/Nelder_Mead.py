@@ -1,7 +1,8 @@
 # from random import random
 import random
 import math
-
+import numpy as np
+import matplotlib.pyplot as plt
 def sphere(x):
     return sum(item**2 for item in x)
 
@@ -80,17 +81,45 @@ def euclidean_distance(point1, point2):
 
 def check_simplex_distance(S, tol):
     """Verifica si la distancia entre los puntos del simplex es menor que la tolerancia."""
-    for i in range(len(S)):
-        for j in range(i + 1, len(S)):
-            dist = euclidean_distance(S[i][1:], S[j][1:])
-            if dist >  tol:
-                return False
-    return True
+    return True if euclidean_distance(S[0],S[-1]) > tol  else False
+
+def objective_function(x, y):
+    return -(x**2 + y**2)
+
+
+def graficar(simplex):
+    # Rango de valores para x e y
+    x_values = np.linspace(0, 150, 100)
+    y_values = np.linspace(-10, 40, 100)
+    # Crear una malla de valores para x e y
+    X, Y = np.meshgrid(x_values, y_values)
+    # Función objetivo (ejemplo)
+    Z_obj = objective_function(X, Y)
+    # Crear el contorno de la función objetivo
+    plt.contour(X, Y, Z_obj, levels=20, cmap='viridis') 
+    # Graficar cada triángulo del simplex (ejemplo)
+    for s in simplex:
+        # Extraer las coordenadas x, y, z de los puntos del triángulo
+        x = s[:, 0]
+        y = s[:, 1]
+        z = s[:, 2]
+        # Conectar los puntos del triángulo
+        for i in range(len(s)):
+            plt.plot([x[i], x[(i+1)%len(s)]], [y[i], y[(i+1)%len(s)]], 'b--')
+
+    # Etiquetas de los ejes y título
+    plt.xlabel('X')
+    plt.ylabel('Y')
+    plt.title('Contouring the Solution Space of Optimization')
+
+    # Mostrar el gráfico
+    plt.grid(True)
+    return plt
 
 
 def main():
     try:
-        # print("\n".join(str(s) for s in S))
+        space_optimizations = []
         n = 2
         Reflection = 1
         Expansion =2
@@ -100,18 +129,19 @@ def main():
         S = createPop(n, n+1)
         print("\n".join(str(s) for s in S))
         print("#" * 100)
-        tolerancia = 0.001
-        # isConverge = check_simplex_distance(S , tolerancia )
+        tolerancia = 0.01
         spinning = 0
-        while spinning < 100:
+        # while spinning < 100:
+        while check_simplex_distance(S, tolerancia):
             #Ordenamos
             S = sortPop(S)
+            space_optimizations.extend([np.array(S)])
+
             #print("\n".join(str(s) for s in S))
             #Calculamos el centro de masa quitamos el pero punto
             M = determineMass(S[:n])
             #print("\n".join(str(m) for m in M))
             #Reflection: reflect the worst point over m
-            "Revisalor S[-1]"
             R = reflection(M, Reflection, S[n][1:])
             fR = sphere(R)
             #Ocupo por indices por que ya esta calculado el funcion del esfera
@@ -146,9 +176,40 @@ def main():
                         S = Shrink(S, shrink)
             spinning +=1
         print("\n".join(str(s) for s in S))
+        return space_optimizations
     except Exception as e:
         print(f"Error en main : {str(e)}")
 
     
-if __name__ == "__main__":
-    main()
+simplex = main()
+# plt = graficar(S) 
+    # Rango de valores para x e y
+x_values = np.linspace(0, 150, 100)
+y_values = np.linspace(-10, 40, 100)
+# Crear una malla de valores para x e y
+X, Y = np.meshgrid(x_values, y_values)
+# Función objetivo (ejemplo)
+Z_obj = objective_function(X, Y)
+# Crear el contorno de la función objetivo
+plt.contour(X, Y, Z_obj, levels=20, cmap='viridis') 
+colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']  # Puedes agregar más colores si es necesario
+# Graficar cada triángulo del simplex (ejemplo)
+for idx, s in enumerate(simplex):
+    # Extraer las coordenadas x, y, z de los puntos del triángulo
+    x = s[:, 0]
+    y = s[:, 1]
+    z = s[:, 2]
+    # color = plt.cm.rainbow(idx / len(simplex))  # Utilizamos un mapa de colores
+    color = colors[idx % len(colors)]  # Ciclo de colores si hay más triángulos que colores
+    # Conectar los puntos del triángulo
+    for i in range(len(s)):
+        plt.plot([x[i], x[(i+1)%len(s)]], [y[i], y[(i+1)%len(s)]], 'b--',color=color)
+
+# Etiquetas de los ejes y título
+plt.xlabel('X')
+plt.ylabel('Y')
+plt.title('Contouring the Solution Space of Optimization')
+
+# Mostrar el gráfico
+plt.grid(True)
+plt.show()
