@@ -69,7 +69,7 @@ function bayerNormalizate = normalizate_bayer(subBayer,bayer_rggbT)
     funcion_resta = @(block_struct) block_struct.data - bayer_rggbT;
     resultado = blockproc(subBayer, [2, 2], funcion_resta);
     max_valor = max(resultado, [], 'all');
-    bayerNormalizate = double(resultado) / double(max_valor);
+    bayerNormalizate = double(resultado) ./ double(max_valor);
 end
 
 function bayer_balance_blancos = balance_blancos(bayer_normalizado,balanceB)

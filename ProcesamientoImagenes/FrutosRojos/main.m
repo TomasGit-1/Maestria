@@ -13,6 +13,7 @@ segV = img(:,:,2) < 140;
 segB = img(:,:,3);
 
 separacion = segR & segV & segB;
+
 imgFinal = img .* uint8(separacion);
 
 
