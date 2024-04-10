@@ -2,6 +2,14 @@ clear all;
 imgFlowers = imread("flowers.jpg");
 imgCube = imread("cube.jpg");
 
+figure(1)
+    subplot(1,4,[1,2]);
+    imshow(imgFlowers,[]);
+    subplot(1,4,[3,4]);
+    imshow(imgCube,[]);
+    title("Original");
+
+
 tx = 12;
 ty = 6;
 imgTraslationFlowers = traslacion(imgFlowers, tx, ty);
@@ -10,14 +18,33 @@ tx = 120;
 ty = 0;
 imgTraslationCube = traslacion(imgCube, tx, ty);
 
+
+figure(2)
+    subplot(1,4,[1,2]);
+    imshow(imgTraslationFlowers,[]);
+    subplot(1,4,[3,4]);
+    imshow(imgTraslationCube,[]);
+    title("Traslacion");
+
+
 ex = 0.222;
 ey = 0.222;
 imgEscaladoFlowers = escalado(imgFlowers, ex, ey);
+imgEscaladoFlowers = interpolacionRGB(imgEscaladoFlowers);
+imgEscaladoFlowers = interpolacionRGBHorizontal(imgEscaladoFlowers);
 
 ex = 1.2;
 ey = 1.2;
 imgEscaladoFlowers2 = escalado(imgFlowers, ex, ey);
-%imgEscaladoFlowers2 = interpolacionBicubica(imgEscaladoFlowers2);
+imgEscaladoFlowers2 = interpolacionRGB(imgEscaladoFlowers2);
+imgEscaladoFlowers2 = interpolacionRGBHorizontal(imgEscaladoFlowers2);
+
+figure(3)
+    subplot(1,4,[1,2]);
+    imshow(imgEscaladoFlowers,[]);
+    subplot(1,4,[3,4]);
+    imshow(imgEscaladoFlowers2,[]);
+    title("Escalado");
 
 %Inclininacion
 a = 0.4;
@@ -25,34 +52,6 @@ imgSesgadoFlowers = sesgado(imgFlowers, a);
 a = 0.1;
 imgSesgadoCube = sesgado(imgCube, a);
 
-a = 0.2;
-imgRotacionFlower = rotacion(imgFlowers, a);
-a = 0.4;
-imgRotacionCube = rotacion(imgFlowers, a);
-
-
-figure(1)
-    subplot(1,4,[1,2]);
-    imshow(imgFlowers,[]);
-    subplot(1,4,[3,4]);
-    imshow(imgCube,[]);
-    title("Original");
-%{
-figure(2)
-    subplot(1,4,[1,2]);
-    imshow(imgTraslationFlowers,[]);
-    subplot(1,4,[3,4]);
-    imshow(imgTraslationCube,[]);
-    title("Traslacion");
-figure(3)
-    subplot(1,4,[1,2]);
-    imshow(imgEscaladoFlowers,[]);
-    subplot(1,4,[3,4]);
-    imshow(imgEscaladoFlowers2,[]);
-    title("Escalado");
-%}
-
-%{
 figure(4)
     subplot(1,4,[1,2]);
     imshow(imgSesgadoFlowers,[]);
@@ -60,14 +59,13 @@ figure(4)
     imshow(imgSesgadoCube,[]);
     title("Sesgado");
 
-%}
-
 a = 45;
 imgRotacionFlower = rotacion(imgFlowers, a);
+imgRotacionFlower = interpolacionRGB(imgRotacionFlower);
+
 a = 10;
 imgRotacionCube = rotacion(imgFlowers, a);
-%imgRotacionCube =imgRotacionCube(1:10,1:100);
-imgRotacionCube2 = interpolacionSinExtremos(imgRotacionCube);
+imgRotacionCube = interpolacionRGB(imgRotacionCube);
 
 figure(5)
 subplot(1,4,[1,2]);
@@ -75,6 +73,10 @@ imshow(imgRotacionFlower,[]);
 subplot(1,4,[3,4]);
 imshow(imgRotacionCube,[]);
 title("Rotacion");
+
+
+
+
 
 function imgTranslation = traslacion(img, tx, ty)
     for y = 1:size(img,1)
@@ -146,61 +148,45 @@ function imagen_interpolada = interpolacion(imagen_rgb)
    
 end
 
-
-function img = interpolacionSinExtremos(img)
-    imgInterpolada =uint8(zeros(size(img)));
-    for i = 1:size(img, 1)
-        fila = img(i, :);
-        % Encuentra los índices de los píxeles que no son negros
-        indices_no_negros = find(fila ~= 0);
-    
-        % Verifica si hay al menos dos píxeles no negros para poder realizar interpolación
+function img = interpolacionRGB(img)    
+    [altura, ancho, ~] = size(img);
+    for i = 1:altura
+        fila = squeeze(img(i, :, :)); % Convertir la fila en una matriz 512x3 (canales de color)
+        primer_no_cero = find(any(fila ~= 0, 2), 1, 'first'); % Encontrar el primer píxel no negro en cualquier canal
+        ultimo_no_cero = find(any(fila ~= 0, 2), 1, 'last'); % Encontrar el último píxel no negro en cualquier canal
+        sub_fila = fila(primer_no_cero:ultimo_no_cero, :); % Extraer la subfila con píxeles no negros
+        indices_no_negros = find(any(sub_fila ~= 0, 2)); % Encontrar los índices de los píxeles no negros en la subfila
         if numel(indices_no_negros) >= 2
-            % Calcula la interpolación lineal usando solo los píxeles no negros
-            valores_no_negros = double(fila(indices_no_negros));
-            valores_interp = interp1(indices_no_negros, valores_no_negros, 1:numel(fila), 'linear');    
-            % Asigna los valores interpolados a los píxeles negros dentro del rango de píxeles no negros
-            fila_interpolada = fila;
-            fila_interpolada(fila == 0 & 1:numel(fila) >= indices_no_negros(1) & 1:numel(fila) <= indices_no_negros(end)) = valores_interp(fila == 0 & 1:numel(fila) >= indices_no_negros(1) & 1:numel(fila) <= indices_no_negros(end));
-        else
-            % Si hay menos de dos píxeles no negros, simplemente asigna la fila original
-            fila_interpolada = fila;
+            % Interpolar las intensidades utilizando las posiciones relativas
+            valores_no_negros = double(sub_fila(indices_no_negros, :));
+            indices_negros = find(all(sub_fila == 0, 2));
+            posiciones_interp = indices_negros;
+            valores_interp = interp1(indices_no_negros, valores_no_negros, posiciones_interp, 'linear');
+
+            % Asignar los valores interpolados solo a los píxeles originales que eran negros
+            sub_fila(indices_negros, :) = valores_interp;
+
+            % Asignar la sub_fila interpolada a la fila original
+            fila(primer_no_cero:ultimo_no_cero, :) = sub_fila;
         end
-        img(i, :) = fila_interpolada;
+        
+        % Asignar la fila interpolada a la imagen original
+        img(i, :, :) = fila;
     end
 end
 
-function imgInterpolada = interpolacionInterp1(img)
-    imgInterpolada =uint8(zeros(size(img)));
-    for i = 1:size(img, 1)
-        fila = img(i, :);
-        
-        % Encontrar los índices de los valores que no son cero
-        indices_no_ceros = find(fila ~= 0);
-        valores_no_ceros = double(fila(indices_no_ceros));        
-        
-        % Verificar si hay ceros al principio y al final de la fila
-        if numel(indices_no_ceros) < numel(fila) % Si hay ceros
-            % Encontrar el índice del primer valor no cero
-            primer_no_cero = indices_no_ceros(1);
-            % Encontrar el índice del último valor no cero
-            ultimo_no_cero = indices_no_ceros(end);
-            
-            % Obtener solo los índices de los ceros que están dentro del rango de valores no cero
-            indices_ceros = setdiff(primer_no_cero:ultimo_no_cero, indices_no_ceros);
-            
-            % Calcular la interpolación lineal solo para los ceros dentro del rango
-            if ~isempty(indices_ceros)
-                valores_interp = interp1(indices_no_ceros, valores_no_ceros, indices_ceros, 'linear');
-                % Asignar los valores interpolados a los ceros dentro del rango
-                fila(indices_ceros) = uint8(valores_interp);   
-            end
-        end
-        
-        % Asignar la fila interpolada a la imagen interpolada
-        imgInterpolada(i, :) = fila;
+function img = interpolacionRGBHorizontal(img)    
+    [altura, ancho, ~] = size(img);
+    for j = 1:ancho
+        columna = squeeze(img(:, j, :));     
+        indices_negros = find(all(columna == 0, 2));
+        if numel(indices_negros) >= 2
+            intensidades_no_negras = double(columna(~all(columna == 0, 2), :));
+            posiciones_no_negras = find(~all(columna == 0, 2));            
+            posiciones_interp = indices_negros;
+            valores_interp = interp1(posiciones_no_negras, intensidades_no_negras, posiciones_interp, 'linear', 'extrap');            
+            columna(indices_negros, :) = valores_interp;
+        end        
+        img(:, j, :) = columna;
     end
-
-   
 end
-

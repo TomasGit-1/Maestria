@@ -1,0 +1,35 @@
+Archivo de consentimiento uso investigacion "no para uso comercial"
+Archivo autorizan el uso de investigacion
+
+
+Estado de arte:
+
+Realizarlo como tipo narrativa 
+	todos los proyectos redactados como si los estuviera contado
+
+
+y no por Sub seccion . Lo ocupo para cuando cambio de tema
+
+
+
+Tabla 
+Autor | Refrencia | Titulo |Tecnologia que uso |Trabajo | Revista  | Resultadsos (Un parrafo de maximo de dos lineas)
+
+Graficas 
+
+A la par 
+Platamiento del problema
+Objectivo especiicos
+Objectivos General
+Jusificacion
+
+
+Platear Un ametodologia
+	Revisasr estado del arte
+	Contruiccion base de conocemiento
+	Entrenamiento de los modelos 
+	Pruebas 
+	Evaluacion de resultados.
+
+Cronograma
+conclusones
