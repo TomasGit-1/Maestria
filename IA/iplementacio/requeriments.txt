@@ -1,0 +1,4 @@
+Probar el codigo con datos normalizados y no normalizados
+
+Funcion sigmoiide
+
