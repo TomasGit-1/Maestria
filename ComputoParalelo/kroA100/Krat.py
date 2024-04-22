@@ -3,7 +3,7 @@ import numpy as np
 from scipy.spatial.distance import cdist
 import random
 import matplotlib.pyplot as plt
-
+import time
 def read_file(filename):
     with open(filename, 'r') as f:
         lines = f.readlines()
@@ -36,7 +36,8 @@ def compute_energy(X,distance):
 def accept(deltaE, T):
     if deltaE < 0:
         return True
-    return random.random() < math.exp(- deltaE / T)
+    result = random.random() < math.exp(- deltaE / T)
+    return result
 
 def plot_cities(cities , distance_matrix=None):
     x = [city[0] for city in cities]
@@ -81,7 +82,6 @@ def plots_solution(solucion,distance_matrix=None):
     # Etiquetar las ciudades con su índice
     for index, coordinates in solucion:
         plt.text(coordinates[0], coordinates[1], str(index), fontsize=12, ha='center', va='center')
-
     
     for i in range(len(solution) - 1):
         city1 = solution[i]
@@ -107,40 +107,92 @@ def plots_solution(solucion,distance_matrix=None):
     plt.grid(True)
     plt.show()
 
+
+def generate_solution2OTP(X_new,distance):
+    improved = True
+    while improved:
+        improved = False
+        for i in range(len(X_new) - 1):
+            for j in range(i + 2, len(X_new)):
+                new_solution = np.concatenate((X_new[:i], X_new[i:j][::-1], X_new[j:]))
+                new_distance = compute_energy(new_solution, distance)
+                if new_distance < compute_energy(X_new, distance):
+                    X_new = new_solution
+                    improved = True
+                    break
+            if improved:
+               break
+    return X_new
+    
+def Generate_2opt(X_new, distance):
+    minChange = 0
+    for i in range(len(X_new) - 2):
+        for j in range(i + 2 , len(X_new) - 1):
+            costA =  distance[X_new[i]][X_new[i+1]]  +  distance[X_new[j]][X_new[j+1]]
+            costN =  distance[X_new[i]][X_new[j]]  +  distance[X_new[i]][X_new[j+1]]
+            change = costN - costA
+            if change < minChange:
+                minChange = change
+                min_i = i
+                min_j = j
+    if minChange < 0:
+        X_new[min_i+1:min_j+1] = X_new[min_i+1:min_j+1][::-1]
+    
+    return X_new
+
+
+def generate_solution2OPT1(X_new):
+    i, j = random.sample(range(len(X_new)), 2)
+    i, j = min(i, j), max(i, j)
+    # Aplica el movimiento 2-opt invirtiendo el subrecorrido entre i y j
+    # new_solution = X_new[:i] + X_new[i:j+1][::-1] + X_new[j+1:]
+    new_solution =  np.concatenate((X_new[:i], X_new[i:j][::-1], X_new[j:]))
+    return new_solution
+
+    
 def simulated_annealing(Tmax, Tmin, Eth, alpha, citys,distance):
     T = Tmax
     X =generate_solution(citys)
     E = compute_energy(X,distance)
-    T_values = []
-    E_values = []
+    print(f"Ajuste de energia {str(T)}  E {str(E)}")
 
-    while T > Tmin and E > Eth:
-        Xnew = generate_solution(X)
+    step = 1
+    while (T > Tmin) and (E > Eth):
+        Xnew = generate_solution2OTP(X,distance)
         Enew = compute_energy(Xnew,distance)
         deltaE = Enew - E
         if accept(deltaE, T):
             X = Xnew
             E = Enew
-        T = T / alpha
-        T_values.append(T)
-        E_values.append(E)
+        #https://nathanrooy.github.io/posts/2020-05-14/simulated-annealing-with-python/
+
+        T = T / (step * alpha)
+        print(f"Ajuste de energia {str(T)}  E {str(E)}")
+        step+=1
+        if math.isinf(T):
+            print("La temperatura ha alcanzado 'inf'. El algoritmo ha convergido o ha llegado a su límite de iteración.")
+            print(f"Error Minimo {E}")
+            break
 
     solucion = [(index, citys[index]) for index in X]
     return solucion
 
 
 if __name__ == '__main__':
-    filename = "kroA100/kro100.tsp"
+    start_time = time.time()
+    filename = "kroA100.tsp"
     citys = read_file(filename)
     distance = calculate_distance(citys)
-
-    Tmax = 20
+    Tmax = 1000
     Tmin = 10
-    alpha = 1.9
-    Eth = 100
+    alpha = 0.9
+    Eth = 21282
+    # Eth = 100
     solution = simulated_annealing(Tmax, Tmin, Eth, alpha,citys,distance)
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print("Tiempo transcurrido:", elapsed_time, "segundos")
     plot_cities(citys,distance)
     plots_solution(solution,distance)
-
     print(solution)
 
