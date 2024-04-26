@@ -114,6 +114,8 @@ def generate_solution2OTP(X_new,distance):
         improved = False
         for i in range(len(X_new) - 1):
             for j in range(i + 2, len(X_new)):
+                if j - i == 1:
+                    continue
                 new_solution = np.concatenate((X_new[:i], X_new[i:j][::-1], X_new[j:]))
                 new_distance = compute_energy(new_solution, distance)
                 if new_distance < compute_energy(X_new, distance):
@@ -141,13 +143,19 @@ def Generate_2opt(X_new, distance):
     return X_new
 
 
-def generate_solution2OPT1(X_new):
-    i, j = random.sample(range(len(X_new)), 2)
-    i, j = min(i, j), max(i, j)
-    # Aplica el movimiento 2-opt invirtiendo el subrecorrido entre i y j
-    # new_solution = X_new[:i] + X_new[i:j+1][::-1] + X_new[j+1:]
-    new_solution =  np.concatenate((X_new[:i], X_new[i:j][::-1], X_new[j:]))
-    return new_solution
+def generate_solution2OPT1(X_new,previous_solutions):
+    while True:
+        i, j = random.sample(range(len(X_new)), 2) 
+        i, j = min(i, j), max(i, j)
+        new_solution = np.copy(X_new)
+        new_solution = np.copy(X_new)
+        if len(X_new[j-1:i-1:-1]) == 0:
+            return X_new , previous_solutions
+        
+        new_solution[i:j] = X_new[j-1:i-1:-1]
+        if tuple(new_solution) not in previous_solutions:
+            previous_solutions.add(tuple(new_solution))
+            return new_solution,previous_solutions
 
     
 def simulated_annealing(Tmax, Tmin, Eth, alpha, citys,distance):
@@ -165,8 +173,11 @@ def simulated_annealing(Tmax, Tmin, Eth, alpha, citys,distance):
             X = Xnew
             E = Enew
         #https://nathanrooy.github.io/posts/2020-05-14/simulated-annealing-with-python/
+        # T = T / (step * alpha)
+        T = alpha * T 
+        # T =  T / alpha 
 
-        T = T / (step * alpha)
+
         print(f"Ajuste de energia {str(T)}  E {str(E)}")
         step+=1
         if math.isinf(T):
@@ -178,6 +189,39 @@ def simulated_annealing(Tmax, Tmin, Eth, alpha, citys,distance):
     return solucion
 
 
+# def simulated_annealingV2(Tmax, Tmin, Eth, alpha, citys,distance):
+#     T = Tmax
+#     X =generate_solution(citys)
+#     E = compute_energy(X,distance)
+#     previous_solutions = [X]  # Lista para almacenar las soluciones anteriores
+#     previous_solutions = set()
+#     previous_solutions.add(tuple(X))
+#     print(f"Ajuste de energia {str(T)}  E {str(E)}")
+
+#     step = 1
+#     while (T > Tmin) and (E > Eth):
+#         Xnew,previous_solutions = generate_solution2OPT1(X,previous_solutions) 
+#         Enew = compute_energy(Xnew,distance)
+#         deltaE = Enew - E
+#         if accept(deltaE, T):
+#             X = Xnew
+#             E = Enew
+#         #https://nathanrooy.github.io/posts/2020-05-14/simulated-annealing-with-python/
+#         # T = T / (step * alpha)
+#         T = alpha * T 
+#         T =  T / alpha 
+
+#         print(f"Ajuste de energia {str(T)}  E {str(E)}")
+#         step+=1
+#         if math.isinf(T):
+#             print("La temperatura ha alcanzado 'inf'. El algoritmo ha convergido o ha llegado a su límite de iteración.")
+#             print(f"Error Minimo {E}")
+#             break
+
+#     solucion = [(index, citys[index]) for index in X]
+#     return solucion
+
+
 if __name__ == '__main__':
     start_time = time.time()
     filename = "kroA100.tsp"
@@ -185,9 +229,8 @@ if __name__ == '__main__':
     distance = calculate_distance(citys)
     Tmax = 1000
     Tmin = 10
-    alpha = 0.9
+    alpha = 0.8
     Eth = 21282
-    # Eth = 100
     solution = simulated_annealing(Tmax, Tmin, Eth, alpha,citys,distance)
     end_time = time.time()
     elapsed_time = end_time - start_time

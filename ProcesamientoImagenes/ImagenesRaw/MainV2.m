@@ -3,35 +3,27 @@ bayerImage = rawread(fileName);
 bayerInfo = rawinfo(fileName);
 cameraToRGB = bayerInfo.ColorInfo.CameraTosRGB;
 %Definimos las matriz a utilizar
-bayer_rggb = uint16([800,800;800,800]);
-balanceB = [2.964,1; 1, 1.832];
-%subBayer = bayerImage(500:1800, 500:2000);
-%subBayer = bayerImage(1000:1006, 1000:1006);
+%bayer_rggb = uint16([800,800;800,800]);
+bayer_rggb = reshape(bayerInfo.ColorInfo.BlackLevel,2,2);
+%balanceB = [2.964,1; 1, 1.832];
+balanceB = reshape(bayerInfo.ColorInfo.CameraAsTakenWhiteBalance./ 1024, 2, 2);
 
-subBayer = bayerImage;
+subBayer = bayerImage(500:1800, 500:2000);
+subBayer = bayerImage(1000:1006, 1000:1006);
+subBayer = bayerImage(1:10, 1000:1010);
+%subBayer = bayerImage;
 
 bayerNomalizado = normalizate_bayer(subBayer,bayer_rggb);
+%bayerNomalizado = max(0,bayerNomalizado);
 bayerBalanceB = balance_blancos(bayerNomalizado,balanceB);
 
 bayerRojo = separar_rojo(bayerBalanceB);
 bayerVerde = separarVerde(bayerBalanceB);
 bayerAzul = separarAzul(bayerBalanceB);
 
-sigma = 3; % Parámetro de desviación estándar del filtro Gaussiano
-
 bayerRI = interpolacionRojo(bayerRojo);
-canal_verde_suavizado = imgaussfilt(bayerRI, sigma);
-bayerRI = canal_verde_suavizado;
-
 bayerVI = interpolacionVerde(bayerVerde);
-canal_verde_suavizado = imgaussfilt(bayerVI, sigma);
-bayerVI = canal_verde_suavizado;
-bayerVI = bayerVI * 0.8;
-
 bayerAI = interpolacionAzul(bayerAzul);
-canal_verde_suavizado = imgaussfilt(bayerAI, sigma);
-bayerAI = canal_verde_suavizado;
-
 
 bayerColorAG = espacionRGB(bayerRI, bayerVI, bayerAI, cameraToRGB );
 bayerColor =generate_gamma(bayerColorAG);
@@ -67,14 +59,14 @@ figure()
 
 function bayerNormalizate = normalizate_bayer(subBayer,bayer_rggbT)
     funcion_resta = @(block_struct) block_struct.data - bayer_rggbT;
-    resultado = blockproc(subBayer, [2, 2], funcion_resta);
-    max_valor = max(resultado, [], 'all');
-    bayerNormalizate = double(resultado) ./ double(max_valor);
+    resultado =double( blockproc(subBayer, [2, 2], funcion_resta));
+    max_valor = double(max(max(resultado)));
+    bayerNormalizate = resultado ./ max_valor;
 end
 
 function bayer_balance_blancos = balance_blancos(bayer_normalizado,balanceB)
-    funcion_ajuste_W = @(block_struct) block_struct.data * balanceB;
-    bayer_balance_blancos = blockproc(bayer_normalizado, [2, 2], funcion_ajuste_W);
+    funcion_ajuste_W = @(block_struct) block_struct.data .* balanceB;
+    bayer_balance_blancos = double(blockproc(bayer_normalizado, [2, 2], funcion_ajuste_W));
 end
 
 function bayerRojo = separar_rojo(bayer)
@@ -126,20 +118,24 @@ function bayerRI = interpolacionRojo(bayerRI)
 end
 
 function bayerVI =  interpolacionVerde(bayerVI)
-
     filas = bayerVI([1, end], :);
     columnas = bayerVI(:, [1, end]);
     bayerVI(1,1) =  bayerVI(1,2);
     bayerVI(end,end) =  bayerVI(end-1);
-    bayerVI = interpolar_bordes(bayerVI);
-    [pos_filas_ceros, pos_columnas_ceros] = find(bayerVI == 0);
-    posiciones = [pos_filas_ceros, pos_columnas_ceros];
+    %bayerVI = interpolar_bordes(bayerVI);
+       
+    
+    for i=1:size(bayerVI)
+        bayerVI(i,:) = interpolar16(bayerVI(i,:));    
+    end 
+    
+    %[pos_filas_ceros, pos_columnas_ceros] = find(bayerVI == 0);
+    %posiciones = [pos_filas_ceros, pos_columnas_ceros];
     %rowcolP = posiciones(all(mod(posiciones, 2) == 0, 2), :);
-    bayerVI = interpolacion_bilinealCruz(bayerVI, posiciones);
+    %bayerVI = interpolacion_bilinealCruz(bayerVI, posiciones);
 end 
 
 function bayerAI = interpolacionAzul(bayerAI)
-    
     if all(bayerAI(1,:) == 0)
        bayerAI(1, :) = bayerAI(2, :);
     end
@@ -191,40 +187,28 @@ function valores = interpolar(valores)
     
     % Calcular la interpolación lineal usando interp1 con los mismos puntos de interpolación
     valores_interp = interp1(indices_no_ceros, valores_no_ceros, indices_ceros, 'linear');
-    
+    %valores_interp(valores_interp < 0) = 0;
+    %valores_interp(valores_interp > 1) = 1;  
     % Asignar los valores interpolados al vector original
     valores(indices_ceros) = valores_interp;
 end
 
-function valores_interp = interpolarbsxfun(valores)
-
-    % Encuentra los índices de los valores no cero y los valores cero en el vector
+function valores = interpolar16(valores)
+    % Encontrar los índices de los valores que no son cero
     indices_no_ceros = find(valores ~= 0);
+    valores_no_ceros = valores(indices_no_ceros);
+    
+    % Encontrar los índices de los valores que son cero
     indices_ceros = find(valores == 0);
     
-    % Encuentra los dos índices más cercanos que no son cero para cada valor cero
-    x0_indices = max(bsxfun(@lt, indices_no_ceros', indices_ceros), [], 1);
-    x1_indices = min(bsxfun(@gt, indices_no_ceros', indices_ceros), [], 1);
-    
-    % Obtiene los valores correspondientes de x0 y x1
-    x0 = indices_no_ceros(x0_indices);
-    x1 = indices_no_ceros(x1_indices);
-    
-    % Obtiene los valores de los puntos conocidos más cercanos
-    y0 = valores(x0);
-    y1 = valores(x1);
-    
-    % Realiza la interpolación utilizando interp1
-    interpolated_values = interp1([x0; x1], [y0; y1], indices_ceros);
-    valores_interp = valores;
-
-    % Asigna los valores interpolados al vector original en las posiciones de los valores cero
-    valores_interp(indices_ceros) = interpolated_values;
-    
-    % Rellena los valores NaN con una interpolación adicional
-    nan_indices = isnan(valores_interp);
-    valores_interp(nan_indices) = interp1(indices_no_ceros, valores(indices_no_ceros), find(nan_indices), 'linear');
+    % Calcular la interpolación lineal usando interp1 con los mismos puntos de interpolación
+    valores_interp = interp1(indices_no_ceros, valores_no_ceros, indices_ceros, 'pchip');
+    %valores_interp(valores_interp < 0) = 0;
+    %valores_interp(valores_interp > 1) = 1;  
+    % Asignar los valores interpolados al vector original
+    valores(indices_ceros) = valores_interp;
 end
+
 
 function bayer = interpolacion_bilinealCruz(bayer, posiciones) 
     % Extraer las coordenadas de las posiciones
@@ -314,48 +298,3 @@ function imagenColor = generate_gamma(bayerColor)
     imagenColor = bayerColor;
 end
 
-function imnprimir(subBayer, bayerNomalizado, bayerBalanceB, bayerRojo, bayerVerde,bayerAzul, bayerRI,bayerVI,bayerAI,bayerColor)
-    filas = 5;
-    columnas = 3;
-    figure(1)
-    subplot(filas, columnas, 1); % Subplot de 1 fila y 3 columnas, primer gráfico
-    imshow(subBayer, []); % Mostrar bayerImage
-    title('Imagen original');
-    
-    subplot(filas, columnas, 2);
-    imshow(bayerNomalizado, []);
-    title('Imagen normalizada');
-    
-    subplot(filas, columnas, 3);
-    imshow(bayerBalanceB, []); 
-    title('Imagen normalizada blanco');
-    
-    subplot(filas, columnas, 4);
-    imshow(bayerRojo, []);
-    title('Mosaico R');
-    
-    subplot(filas, columnas, 5); 
-    imshow(bayerVerde, []); 
-    title('Mosaico GG');
-    
-    subplot(filas, columnas, 6); 
-    imshow(bayerAzul, []);
-    title('Mosaico B');
-    
-    subplot(filas, columnas, 7);
-    imshow(bayerRI, []);
-    title('Mosaico Completo R');
-    
-    subplot(filas, columnas, 8); 
-    imshow(bayerVI, []); 
-    title('Mosaico Completo GG');
-    
-    subplot(filas, columnas, 9); 
-    imshow(bayerAI, []);
-    title('Mosaico Completo A');
-    
-    imagen_real = real(bayerColor);
-    subplot(filas, columnas, 10);
-    imshow(imagen_real, []);
-    title('Color');
-end 
