@@ -11,7 +11,7 @@ balanceB = reshape(bayerInfo.ColorInfo.CameraAsTakenWhiteBalance./ 1024, 2, 2);
 subBayer = bayerImage(500:1800, 500:2000);
 subBayer = bayerImage(1000:1006, 1000:1006);
 subBayer = bayerImage(1:10, 1000:1010);
-%subBayer = bayerImage;
+subBayer = bayerImage;
 
 bayerNomalizado = normalizate_bayer(subBayer,bayer_rggb);
 %bayerNomalizado = max(0,bayerNomalizado);
