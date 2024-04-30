@@ -13,6 +13,7 @@ subBayer = bayerImage;
 [row, col] = size(subBayer);
 row = floor(row / 2);
 col = floor(col / 2);
+
 %Creamos la matriz 
 BlackLevel = double(repmat(BlackLevel, row, col));
 WhiteBalance = double(repmat(WhiteBalance, row, col));
@@ -177,14 +178,10 @@ function valores = interpolar(valores)
     % Encontrar los índices de los valores que no son cero
     indices_no_ceros = find(valores ~= 0);
     valores_no_ceros = valores(indices_no_ceros);
-    
     % Encontrar los índices de los valores que son cero
     indices_ceros = find(valores == 0);
-    
     % Calcular la interpolación lineal usando interp1 con los mismos puntos de interpolación
     valores_interp = interp1(indices_no_ceros, valores_no_ceros, indices_ceros, 'linear');
-    %valores_interp(valores_interp < 0) = 0;
-    %valores_interp(valores_interp > 1) = 1;  
     % Asignar los valores interpolados al vector original
     valores(indices_ceros) = valores_interp;
 end
@@ -262,8 +259,8 @@ function imagenColor = generate_gamma(bayerColor)
     bayerColor(:,:,2) = bayerColor(:,:,2) .^ gamma;
     % Corrección gamma para el canal azul
     bayerColor(:,:,3) = bayerColor(:,:,3).^ gamma;
-
-    %bayerColor = (double(bayerColor) / 255) .^ gamma * 255; % Canal G
+    %bayerColor = (double(bayerColor) / 255) .^ gamma * 255; 
     %bayerColor = (bayerColor/a_max ).^ gamma;
     imagenColor = bayerColor;
 end
+

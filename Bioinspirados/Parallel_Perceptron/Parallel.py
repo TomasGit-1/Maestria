@@ -44,37 +44,37 @@ class PerceptronParalelo():
         m=1
         yi=0.05
         self.vectorWeight =[np.copy(np.random.uniform(low=0,high=1, size=dim)) for _ in range(self.n)]
+
         #Normalizar todos los datos divirdos sobre su norma
 
         for _ in range(self.epochs):
             suma_predicciones=0
-            for w in range(len(self.vectorWeight)):                
-                print(f"Ejecutando el perceptron {w}")
-                y_pre=self.predict(X , w)
-                suma_predicciones+=y_pre
+            predict = [self.predict(X, w) for w in range(len(self.vectorWeight))]
+            suma_predicciones = sum(predict)
             sp= self.squaching(suma_predicciones)
 
-            # sp  = y_pre
             for i in range(len(self.vectorWeight)):
                 alpha= self.vectorWeight[i]
                 
-                if np.all( np.abs(sp - y) <= self.error):
+                if np.all(np.abs(sp - y) <= self.error):
                     #The parallel perceptron is correct up to this accuracy 
                     pass
 
                 if np.all( sp > y +self.error):
                     alpha = alpha + self.error * -X
                
-                if sp > y +self.error and alpha * eXtr >=0:
+                # alpha * eXtr
+                if np.all( sp > y +self.error) and predict[i] >= 0:
                     z=-eXtr
-                elif sp < y -self.error and alpha * eXtr<0:
+                elif sp < y -self.error and predict[i] < 0:
                     z=eXtr
-                elif sp[o]>=y[o]+self.error and 0<=alpha*eXtr<yi:
-                    z=m*(eXtr)
-                elif sp[o]>=y[o]-self.error and -yi<alpha*eXtr<0:
-                    z=m*(-eXtr)
-                else:
-                    z=0
+                    
+                # elif sp[o]>=y[o]+self.error and 0<= predict[i] < yi:
+                #     z=m*(eXtr)
+                # elif sp[o]>=y[o]-self.error and -yi<alpha*eXtr<0:
+                #     z=m*(-eXtr)
+                # else:
+                #     z=0
                 self.w=self.w+self.w+(1/(4*(_)**0.5))
 
             # for o in ord:
