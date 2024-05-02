@@ -26,7 +26,7 @@ def generate_Train():
     plt.scatter(X_te[y_te == 0,0], X_te[y_te == 0,1], marker='x', c = 'red')
     plt.scatter(X_te[y_te == 1,0], X_te[y_te == 1,1], marker='+', c = 'green')
     # plt.show()
-    return X_t,y_t
+    return X_tr, X_te, y_tr, y_te,X_t,y_t
 
 class PerceptronParalelo():
     def __init__(self, epochs=100, n=3, error=0.1):
@@ -34,123 +34,56 @@ class PerceptronParalelo():
         self.n= n
         self.error=error
 
-    def fit2(self, X,y):
+    def fit(self, X,y):
         rows = X.shape[0]
         dim = X.shape[1] + 1            
         ext = np.ones((rows, 1))
         eXtr = np.hstack((X, ext))
+        eXtr = [x / np.linalg.norm(x) for x in eXtr]
         #Normalizar todos los datos divirdos sobre su norma
         e=0.01
         m=1
         yi=0.05
         self.vectorWeight =[np.copy(np.random.uniform(low=0,high=1, size=dim)) for _ in range(self.n)]
-
+        self.vectorWeight = [w / np.linalg.norm(w) for w in self.vectorWeight]
         #Normalizar todos los datos divirdos sobre su norma
 
         for _ in range(self.epochs):
             suma_predicciones=0
-            predict = [self.predict(X, w) for w in range(len(self.vectorWeight))]
+            predict = self.predict(X)
             suma_predicciones = sum(predict)
             sp= self.squaching(suma_predicciones)
 
             for i in range(len(self.vectorWeight)):
                 alpha= self.vectorWeight[i]
-                
-                if np.all(np.abs(sp - y) <= self.error):
+
+                if np.all(np.abs(sp - y) <= e):
                     #The parallel perceptron is correct up to this accuracy 
                     pass
-
-                if np.all( sp > y +self.error):
-                    alpha = alpha + self.error * -X
-               
-                # alpha * eXtr
-                if np.all( sp > y +self.error) and predict[i] >= 0:
-                    z=-eXtr
-                elif sp < y -self.error and predict[i] < 0:
-                    z=eXtr
+                if np.all( sp > y + e ):
+                    delta = -eXtr
                     
-                # elif sp[o]>=y[o]+self.error and 0<= predict[i] < yi:
-                #     z=m*(eXtr)
-                # elif sp[o]>=y[o]-self.error and -yi<alpha*eXtr<0:
-                #     z=m*(-eXtr)
-                # else:
-                #     z=0
-                self.w=self.w+self.w+(1/(4*(_)**0.5))
+                if np.all( sp > y +self.error) and predict[i] >= 0:
+                    delta=-eXtr
+                elif np.all(sp < y -self.error) and predict[i] < 0:
+                    delta=eXtr
+                else:
+                    delta = np.zeros(dim)       
 
-            # for o in ord:
-            #     if sp[o]>y[o]+self.error:
-            #         n=0
-            #         alpha=self.w
-            #         if sp[o]>y[o]+self.error and alpha*eXtr[o]>=0:
-            #             z=-eXtr
-            #         elif sp[o]<y[o]-self.error and alpha*eXtr<0:
-            #             z=eXtr
-            #         elif sp[o]>=y[o]+self.error and 0<=alpha*eXtr<yi:
-            #             z=m*(eXtr)
-            #         elif sp[o]>=y[o]-self.error and -yi<alpha*eXtr<0:
-            #             z=m*(-eXtr)
-            #         else:
-            #             z=0
-            #         self.w=self.w+self.w+(1/(4*(_)**0.5))
-            #     if abs(sp[o]-y[o])<=self.error:
-            #         pass
+                alpha += self.error  * delta
+                self.vectorWeight[i] = alpha
 
-           
-            
-
-    def fit(self,X,y):
-        rows = X.shape[0]
-        dim = X.shape[1] + 1            
-        ext = np.ones((rows, 1))
-        eXtr = np.hstack((X, ext))
-        self.w = np.copy(np.random.uniform(low = 0, high = 1, size = dim))        
-        ws = np.copy(self.w)
-        h = accuracy_score(y, self.predict(X))
-        hs = h
-        e=0.01
-        m=1
-        yi=0.05
-     #recorrer epocas
-        for _ in range(self.epochs):
-            suma_predicciones=0
-        #recorrer eperceptrones
-            for _ in range(self.n):
-                self.w=np.copy(np.random.uniform(low=0,high=1, size=dim))
-                y_pre=self.predict(X)
-                ord=np.random.choice(a=range(rows),size=rows, replace=False)
-                chng=0
-                sp  = y_pre
-
-                for o in ord:
-                    if sp[o]>y[o]+self.error:
-                        n=0
-                        alpha=self.w
-                        if sp[o]>y[o]+self.error and alpha*eXtr[o]>=0:
-                            z=-eXtr
-                        elif sp[o]<y[o]-self.error and alpha*eXtr<0:
-                            z=eXtr
-                        elif sp[o]>=y[o]+self.error and 0<=alpha*eXtr<yi:
-                            z=m*(eXtr)
-                        elif sp[o]>=y[o]-self.error and -yi<alpha*eXtr<0:
-                            z=m*(-eXtr)
-                        else:
-                            z=0
-                        self.w=self.w+self.w+(1/(4*(_)**0.5))
-                    if abs(sp[o]-y[o])<=self.error:
-                        pass
-                suma_predicciones*=y_pre
-            sp= self.squaching(suma_predicciones)
-            h=accuracy_score(y,sp)
-            print("Accuracy",h)
-
-    def predict(self, X ,w):
+    def predict(self, X):
         rows = X.shape[0]
         ext = np.ones((rows, 1))
         eX = np.hstack((X, ext))
         y_hat = np.zeros(rows)
-        for i, x in enumerate(eX):
-            y_hat[i] = 1 if np.dot(x, self.vectorWeight[w]) >= 0 else -1
-        return y_hat
+        predic = []
+        for w in range(len(self.vectorWeight)):
+            for i, x in enumerate(eX):
+                y_hat[i] = 1 if np.dot(x, self.vectorWeight[w]) >= 0 else -1
+            predic.append(y_hat)
+        return predic
         
     def score(self,X,y):
         return accuracy_score(y, self.predict(X))
@@ -160,7 +93,26 @@ class PerceptronParalelo():
         result= np.where(p>=0,1,result)
         return result
     
+def graficar_frontera_decision(modelo, X, y):
+    feature_1, feature_2 = np.meshgrid(
+        np.linspace(np.min(X[:,0]), np.max(X[:,0])),
+        np.linspace(np.min(X[:,1]), np.max(X[:,1])))
+
+    grid = np.vstack([feature_1.ravel(), feature_2.ravel()]).T
+
+    pred = modelo.predict(grid)
+    pred = np.reshape(pred, feature_1.shape)
+    display = DecisionBoundaryDisplay(
+        xx0=feature_1, xx1=feature_2, response=pred)
+    display.plot()
+    display.ax_.scatter(
+        X[:, 0], X[:, 1], c=y, edgecolor="black"
+    )
+    plt.show()
+    
 if __name__ == "__main__":
-    X_tr, y_tr = generate_Train()
+    
+    X_tr, X_te, y_tr, y_te,X_t,y_t = generate_Train()
     ppa = PerceptronParalelo(epochs=100, n=3, error=0.1)
-    ppa.fit2(X_tr, y_tr)
+    ppa.fit(X_tr, y_tr)
+    graficar_frontera_decision(ppa, X_t, y_t)
