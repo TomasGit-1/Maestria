@@ -7,8 +7,10 @@ nneighbors = 2;
 %Kernel
 
 %Gaussiano
+
 kernel = double([1 4 7 4 1; 4 16 25 16 4; 7 26 41 26 7;4 16 26 16 4;1 4 7 4 1]) / 273;
 imgGauss = uint8(convolucion2D(img,nneighbors,kernel));
+
 %imgGauss2 = uint8(conv2(double(img), kernel, 'same'));
 
 %laplace
@@ -19,9 +21,9 @@ imgLaplace = uint8(convolucion2D(img,nneighbors,kernel));
 
 %Low pass Filter 
 kernel = LowPassFilter();
-nneighbors = 2;
+nneighbors = 15;
 imgLowPassFilter = uint8(convolucion2D(img,nneighbors,kernel));
-imgLowPassFilter2 = uint8(conv2(img, kernel, 'same'));
+%imgLowPassFilter2 = uint8(conv2(img, kernel, 'same'));
 
 %Sharpening filter
 kernel = sharpeningFilter();
