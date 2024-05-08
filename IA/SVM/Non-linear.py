@@ -7,10 +7,9 @@ xx, yy = np.meshgrid(np.linspace(-3, 3, 500), np.linspace(-3, 3, 500))
 np.random.seed(0)
 X = np.random.randn(300, 2)
 Y = np.logical_xor(X[:, 0] > 0, X[:, 1] > 0)
-
 # fit the model
 clf = svm.NuSVC(gamma="auto", kernel="rbf")
-clf.fit(X, Y)
+modeloGauss = clf.fit(X, Y)
 
 # plot the decision function for each datapoint on the grid
 Z = clf.decision_function(np.c_[xx.ravel(), yy.ravel()])

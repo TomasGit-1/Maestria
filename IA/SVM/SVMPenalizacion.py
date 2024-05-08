@@ -2,12 +2,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn import svm
 
-
 np.random.seed(0)
 X = np.r_[np.random.randn(20, 2) - [2, 2], np.random.randn(20, 2) + [2, 2]]
 Y = [0] * 20 + [1] * 20
-
-
 fignum = 1
 
 for name, penalty in (("unreg", 1), ("reg", 0.05)):
