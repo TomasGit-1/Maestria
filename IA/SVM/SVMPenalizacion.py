@@ -61,3 +61,4 @@ for name, penalty in (("unreg", 1), ("reg", 0.05)):
     fignum = fignum + 1
 
 plt.show()
+print("\n================================")

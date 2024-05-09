@@ -7,7 +7,7 @@ function imgNoFilter = MedianFilter(img)
                     img(row,col-1)   img(row,col)   img(row,col+1); 
                     img(row+1,col-1)  img(row+1,col) img(row+1,col+1)];   
             flattening = sort(mask(:));
-            imgNoFilter(row,col) = mean(flattening);
+            imgNoFilter(row,col) = median(flattening);
         end
     end
 end

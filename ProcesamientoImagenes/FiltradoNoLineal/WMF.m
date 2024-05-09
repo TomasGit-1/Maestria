@@ -7,11 +7,12 @@ function imgNoFilter = WMF(img , W)
             mask = [img(row-1,col-1) img(row-1,col) img(row-1,col+1); 
                     img(row,col-1)   img(row,col)   img(row,col+1); 
                     img(row+1,col-1)  img(row+1,col) img(row+1,col+1)];
-            A_rep = kron(mask, ones(m, n));
-            resultado = kron(A_rep, W);
+
             preFlattening = mask(:);
             posW = W(:);
-
+            repeatF = repelem(preFlattening, posW);
+            sortinfF = sort(repeatF);
+            imgNoFilter(row,col) = median(sortinfF);
         end
     end
 end
