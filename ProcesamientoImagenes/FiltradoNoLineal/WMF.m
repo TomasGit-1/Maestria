@@ -1,3 +1,4 @@
+
 function imgNoFilter = WMF(img , W)
     [width, height] = size(img);
     imgNoFilter = zeros(width-1, height-1);
@@ -16,3 +17,5 @@ function imgNoFilter = WMF(img , W)
         end
     end
 end
+
+

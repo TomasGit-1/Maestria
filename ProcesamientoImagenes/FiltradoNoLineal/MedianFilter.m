@@ -1,3 +1,5 @@
+
+
 function imgNoFilter = MedianFilter(img)
     [width, height] = size(img);
     imgNoFilter = zeros(width-1, height-1);

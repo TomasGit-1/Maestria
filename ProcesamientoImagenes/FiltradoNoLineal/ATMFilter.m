@@ -1,3 +1,4 @@
+
 function imgNoFilter = ATMFilter(img , d)
     [width, height] = size(img);
     imgNoFilter = zeros(width-1, height-1);

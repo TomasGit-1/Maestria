@@ -23,4 +23,24 @@ imgWMF  = uint8(WMF(img,W));
 [hWMF,HWMF] = Histograma(imgWMF);
 
 
+img = uint8(img);
+
+figure()
+    subplot(3,3,1);
+    imshow(imgWMF);  
+    title("Weighted Median Filter");
+
+    subplot(3,3,2);
+    bar(1:256, hWMF);
+    title('Histograma h');
+    xlabel('Intensidad de Píxeles');
+    ylabel('Frecuencia');
+
+    subplot(3,3,3);
+    bar(1:256, HWMF);
+    title('Histograma Acumulativos H');
+    xlabel('Intensidad de Píxeles');
+    ylabel('Frecuencia');
+
+
 
