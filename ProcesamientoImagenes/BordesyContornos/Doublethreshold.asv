@@ -1,0 +1,7 @@
+lowThreholdRatio = 0.05;
+highThresholdratio = 0.09;
+
+highThreshold = max(max(E2)) * highThresholdratio;
+lowThreshold = hoghThreshold * lowThresholdRatios;
+
+res = zeros(M,N);
