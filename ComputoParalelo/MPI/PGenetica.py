@@ -1,16 +1,17 @@
 from binarytree import Node,build
+from itertools import combinations
 from TreeC import TreeC
 import numpy as np
 import random
 import copy
-
+import math
 class PGenetica:
 
     def __init__(self,X_true,y_true):
         print("Programacion Genetica")
         self.operators = ["+", "-", "*", "/"]
         self.variables = ["X"]
-        self.functions = ["sin", "cos"]
+        self.functions = ["sin", "cos", "tan"]
         self.constants = [str(random.randint(1, 10)) for _ in range(10)]
         self.X_true = X_true
         self.y_true = y_true
@@ -20,8 +21,7 @@ class PGenetica:
     def generatePoblacionAleatoria(self, poblacionSize = 4):
         poblacion = []
         for i in range(poblacionSize):
-            nodes = self.generate_random_expression()
-            Tree = self.ListBuilld(nodes)
+            Tree = self.objTree.build(3)
             expresion,y_predict,mse =self.generateInfo(Tree)
             poblacion.append({"tree":Tree, "expresion":expresion,"y_predict":y_predict,"mse":mse})
         poblacion = sorted(poblacion, key=lambda x: x['mse'])
@@ -30,40 +30,17 @@ class PGenetica:
     def generateInfo(self, Tree):
         expresion,y_predict,mse = None,None,None
         try:
-            expresion = self.generateExpression(Tree)
+            expresion =  self.objTree.generateExpressionV2(Tree)
+            print(Tree)
+            print(expresion)
+            if expresion == None:
+                return None, None,None
             y_predict = [self.evaluar_expresion(expresion, x) for x in self.X_true]
             mse = self.calcular_ecm(self.y_true, y_predict)
             return expresion,y_predict,mse
         except Exception as e:
-            print("Error generatingInfo")
-            return expresion,y_predict,mse
-    
-    def generartePoblacionManual(self, poblacionSize = 4, data=None):   
-        poblacion = []
-        Trees = self.generateArboles()
-        for i in range(4):
-            expresion = self.generateExpression(Trees[i])
-            poblacion.append({"tree":Trees[i], "expresion":expresion,"y":0})
-            print(f"Arbol {Trees[i]} Expresion {expresion}")
-            y_valores = [self.evaluar_expresion(expresion, 2) for x in data]
-        return poblacion
-
-    def generateExpression(self, Tree):
-        expression = [ Tree.inorder[i].values[0] for i in range(len(Tree.inorder))]
-        detectarC3 = 0
-        expresionFull = ""
-        for i in range(len(expression)):
-            if detectarC3 == 0:
-                expresionFull += "("
-            if detectarC3 == 3:
-                expresionFull += ")"
-                expresionFull += expression[i] 
-                detectarC3 = 0
-            else:
-                expresionFull += expression[i] 
-                detectarC3 +=1
-
-        return expresionFull+")"
+            print(f"Error generatingInfo {e}")
+            return expresion,y_predict,mse  
 
     def ListBuilld(self,individuo):
         return build(individuo)
@@ -103,47 +80,79 @@ class PGenetica:
         return round(mse / m, 2)
     
     def generateGeneration(self,poblacion):
-        #Obtenemos los padres.... Revisar como realizar ruleta u otro metodo
-        padres = [(poblacion[i], poblacion[i+1]) for i in range(0, len(poblacion), 2)]
-        poblacion = []
-        for i in range(0, len(padres)):
-            #Realizando la cruza
-            p1 = padres[i][0]
-            node1 = self.seleccionNode(p1["tree"])
-            p2 = padres[i][1]
-            node2 = self.seleccionNode(p2["tree"])
+        newGeneracion = []
+        try:
+            #Obtenemos los padres.... Revisar como realizar ruleta u otro metodo
+            #Generamos permuitacion
+            pos = list(range(len(poblacion)))
+            combinacion = list(combinations(pos, 2))
+            isTypeEquals = True
+            node1 = None
+            node2 = None
+            for i in range(len(poblacion)):
 
-            hijo1 = copy.deepcopy(p1["tree"])
-            hijo2 = copy.deepcopy(p2["tree"])
-            #Cruza
-            hijo1[node1[0]] = node2[1]
-            hijo2[node2[0]] = node1[1]
+                posiblePadres = [j for j in combinacion if i not in j]
+                padres = posiblePadres[0]
 
-            """Falta validar la profundidad"""
+                #Realizando la cruza
+                p1 = poblacion[padres[0]]
+                p2 = poblacion[padres[1]]
+                
+                while isTypeEquals:
+                    node1 = self.seleccionNode(p1["tree"])
+                    node2 = self.seleccionNode(p2["tree"])
+                    isTypeEquals = self.validarTipo(node1[1].value,node2[1].value)
 
-            #Muta
-            hijo1 =self.generateMuta(hijo1)   
-            expresion,y_predict,mse =self.generateInfo(hijo1)
-            poblacion.append({"tree":hijo1, "expresion":expresion,"y_predict":y_predict,"mse":mse})   
-            hijo2 =self.generateMuta(hijo2)
-            expresion,y_predict,mse =self.generateInfo(hijo2)
-            poblacion.append({"tree":hijo2, "expresion":expresion,"y_predict":y_predict,"mse":mse})
+                hijo1 = copy.deepcopy(p1["tree"])
+                hijo2 = copy.deepcopy(p2["tree"])
+                """Realizando la cruza"""
+           
+                hijo1[node1[0]] = node2[1]
+                hijo2[node2[0]] = node1[1]
+           
+                """Falta validar la profundidad"""
+                expresion,y_predict,mse =self.generateInfo(hijo1)
+                expresion2,y_predict2,mse2 =self.generateInfo(hijo2)
 
-        return poblacion
+                elMejor = copy.deepcopy(hijo1)
+                if mse2 ==  None and mse != None :
+                    newGeneracion.append({"tree":elMejor, "expresion":expresion,"y_predict":y_predict,"mse":mse})
+                    continue
+
+                if mse2 !=  None and mse == None :
+                    elMejor = copy.deepcopy(hijo2)
+                    newGeneracion.append({"tree":elMejor, "expresion":expresion2,"y_predict":y_predict2,"mse":mse2})
+                    continue
+                    
+                if mse2 ==  None and mse == None :
+                    newGeneracion.append(p1)
+                    continue
+
+                if mse2<mse:
+                    elMejor = copy.deepcopy(hijo2)
+                    expresion = expresion2
+                    y_predict = y_predict2
+                    mse = mse2
+                """Realizando la Muta"""
+                elMejor =self.generateMuta(elMejor)   
+                newGeneracion.append({"tree":elMejor, "expresion":expresion,"y_predict":y_predict,"mse":mse})
+            return newGeneracion
+        except Exception as e:
+            print("Error: " + str(e))
+            return newGeneracion
 
     def seleccionNode(self,Tree):
         opciones =  [ (indice, elemento) for indice, elemento in enumerate(Tree) if elemento is not None and indice != 0] 
         return random.choice(opciones)
     
+
     def generateMuta(self,Tree):
         node = self.seleccionNode(Tree)
         value = node[1].value
+        temp = None        
         #Verficamos si esl valor es un numero un operador o una funcion
-        temp = None
-        
         if value.isdigit():
-            temp = [str(numero) for numero in range(10)]
-            value = int(value)
+            temp = [str(numero) for numero in range(10) if str(numero) != value]
         elif value in self.operators:
             temp = self.operators
         elif value in self.functions:
@@ -153,9 +162,25 @@ class PGenetica:
         if value != "X":
             posibles = [temp[i] for i in range(len(temp)) if temp[i] != value]
             nuevoValue = random.choice(posibles)
-            Tree[node[0]].value = nuevoValue
+            # Tree[node[0]].value = nuevoValue
+            list(Tree)[node[0]].value = nuevoValue
         return Tree
     
+    def validarTipo(self, valueN1, valueN2):
+        print(valueN1,valueN2)
+        if valueN1.isdigit() and valueN2.isdigit() or  valueN1 == "X" and valueN2.isdigit()  or   valueN1.isdigit() and valueN2 == "X"  :
+            return False
+        if  valueN1 in self.operators and  valueN2 in self.operators:
+            return False
+        if valueN1 in self.functions and valueN2 in self.functions:
+            return False
+        return True
+    
+    
     def evaluar_expresion(self, expresion,X):
-        return eval(expresion)
-
+        try:
+            return eval(expresion, {'sin': math.sin, 'cos': math.cos, 'tan': math.tan,"X": X})
+        except ZeroDivisionError:
+            return -1
+        except:
+            return "Error: Expresión inválida"
