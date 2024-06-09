@@ -1,3 +1,4 @@
+
 imgGray = imread("lena_gray_256.tif");
 
 %Noise reduction
@@ -25,3 +26,21 @@ theta = atan2(double(derivateY), double(derivateX));
 
 E2 = NMSuppression(gradient_magnitude,theta);
 res = Doublethreshold(E2);
+
+figure;
+    subplot(1, 5, 1);
+    imshow(uint8(imgGray));
+    title('Imagen Original');
+    subplot(1, 5, 2);
+    imshow(uint8(imgNR));
+    title('Noise reduction');
+    subplot(1, 5, 3);
+    imshow(uint8(gradient_magnitude));
+    title('Gradient calculation');
+    subplot(1, 5, 4);
+    imshow(uint8(E2));
+    title('Non Maximunm supression')
+    subplot(1, 5, 5);
+    imshow(uint8(res));
+    title('DT +  ETHysteresis')
+

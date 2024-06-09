@@ -1,6 +1,5 @@
-imgGray = double(imread("lena_gray_256.tif"));
-%imgGray = rgb2gray(imgGray);
 
+imgGray = double(imread("lena_gray_256.tif"));
 %Prewitt
 Hsy = [-1 0 1; -1 0 1; -1 0 1];
 Hsx = [-1 -1 -1; 0 0 0; 1 1 1];
@@ -21,3 +20,4 @@ subplot(1, 4, 2), imshow(uint8(derivateX), []), title('Prewitt X');
 subplot(1, 4, 3), imshow(uint8(derivateY), []), title('Prewitt Y');
 subplot(1, 4, 4), imshow(uint8(gradient_magnitude), []), title('E(u,v)');
 
+%imgGray = rgb2gray(imgGray);

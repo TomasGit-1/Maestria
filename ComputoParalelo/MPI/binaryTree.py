@@ -29,10 +29,12 @@ def seleccionNode(Tree):
     opciones =  [ (indice, elemento) for indice, elemento in enumerate(Tree) if elemento is not None ] 
     return random.choice(opciones)
 
-def generatePoblacion():
+def generateArboles():
     E1 =["+","-","*","8.6","/","15","Y",None,None,"X","11",None,None,"sin"]
     E2 = ["*", "+", "-", "X", "7", "8.8", "/", "Y", "11", None, None, None, None, None, "cos"]
     E3 = ["-", "-", "*", "2.2", "/", "7", "X", "11", "cos", "Y", None, None, None, None, None]
+    E3 = ["-", "-", "*", "2.2", "/", "7", "X", "11", "cos", "Y", None, None, None, None, None]
+
     E1Tree = ListBuilld(E1)
     E2Tree = ListBuilld(E2)
     E3Tree = ListBuilld(E3)
@@ -42,11 +44,10 @@ def generateExpression(Tree):
     # print(f'Imprimiendo in order {Tree.inorder}' )
     expression = [ Tree.inorder[i].values[0] for i in range(len(Tree.inorder))]
     return "".join(expression)
-    
 
 
 def main():
-    E1Tree, E2Tree, E3Tree = generatePoblacion()
+    E1Tree, E2Tree, E3Tree = generateArboles()
     print(10*"#"+"Inicio de la poblacion"+10*"#")
     print(f"E1 {E1Tree}")
     expresion = generateExpression(E1Tree)
@@ -74,4 +75,36 @@ def main():
 
 
 
-main()
+# main()
+
+
+def evaluar_expresion(expresion):
+    try:
+        resultado = eval(expresion)
+        return resultado
+    except ZeroDivisionError:
+        return "Error: División por cero"
+    except:
+        return "Error: Expresión inválida"
+    
+# Lista de nodos en orden de nivel (level-order traversal)
+# nodes = [
+#         '+',  
+#         '*', '-',  
+#         '*', '+',  
+#         '+', '/', 
+#         '5', '10',
+#         '15', '20',
+#         '2', '3',
+#         '6', '7'
+#         ]
+
+# tree = build(nodes)
+# print(tree)
+# print(generateExpression(tree))
+# resultado = evaluar_expresion(generateExpression(tree))
+# tree[1].value = "e"
+# print(tree)
+# tree.max_leaf_depth
+# print("")
+

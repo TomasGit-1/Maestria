@@ -1,6 +1,6 @@
-imgGray = double(imread("lena_gray_256.tif"));
-%imgGray = rgb2gray(img);
 
+
+imgGray = double(imread("lena_gray_256.tif"));
 %Sobel
 Hsx = [-1 0 1; -2 0 2; -1 0 1];
 Hsy = [-1 -2 -1; 0 0 0; 1 2 1];
@@ -22,8 +22,8 @@ subplot(1, 4, 4), imshow(uint8(gradient_magnitude), []), title('E(u,v)');
 
 
 
+%imgGray = rgb2gray(img);
 %gradient_direction = atan2(derivateY, derivateX);
-
 %Dx_normalized = (derivateX - min(derivateX(:))) / (max(derivateX(:)) - min(derivateX(:))) * 255;
 %Dy_normalized = (derivateY - min(derivateY(:))) / (max(derivateY(:)) - min(derivateY(:))) * 255;
 %combined_image =  Dx_normalized + Dy_normalized;
