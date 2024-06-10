@@ -31,8 +31,8 @@ class PGenetica:
         expresion,y_predict,mse = None,None,None
         try:
             expresion =  self.objTree.generateExpressionV2(Tree)
-            print(Tree)
-            print(expresion)
+            # print(Tree)
+            # print(expresion)
             if expresion == None:
                 return None, None,None
             y_predict = [self.evaluar_expresion(expresion, x) for x in self.X_true]
@@ -98,6 +98,7 @@ class PGenetica:
                 p1 = poblacion[padres[0]]
                 p2 = poblacion[padres[1]]
                 
+                #Aqui valido si la cruza se realiza sobre los mismos tipos de nodods
                 while isTypeEquals:
                     node1 = self.seleccionNode(p1["tree"])
                     node2 = self.seleccionNode(p2["tree"])
@@ -147,7 +148,9 @@ class PGenetica:
     
 
     def generateMuta(self,Tree):
-        node = self.seleccionNode(Tree)
+        print("Iniciamos la Muta Este es el mejor")
+        mutaTree = copy.deepcopy(Tree)
+        node = self.seleccionNode(mutaTree)
         value = node[1].value
         temp = None        
         #Verficamos si esl valor es un numero un operador o una funcion
@@ -162,12 +165,12 @@ class PGenetica:
         if value != "X":
             posibles = [temp[i] for i in range(len(temp)) if temp[i] != value]
             nuevoValue = random.choice(posibles)
-            # Tree[node[0]].value = nuevoValue
-            list(Tree)[node[0]].value = nuevoValue
-        return Tree
+            mutaTree[node[0]].value = nuevoValue
+            # list(Tree)[node[0]].value = nuevoValue
+        return mutaTree
     
     def validarTipo(self, valueN1, valueN2):
-        print(valueN1,valueN2)
+        # print(valueN1,valueN2)
         if valueN1.isdigit() and valueN2.isdigit() or  valueN1 == "X" and valueN2.isdigit()  or   valueN1.isdigit() and valueN2 == "X"  :
             return False
         if  valueN1 in self.operators and  valueN2 in self.operators:
