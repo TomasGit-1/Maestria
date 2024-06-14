@@ -3,16 +3,6 @@ import random
 import math
 
 class TreeC:
-
-    # def build(self,profundidad_maxima):
-    #     if profundidad_maxima == 0:
-    #         return Node(str(random.randint(1, 10)))
-    #     else:
-    #         raiz = Node(random.choice(['+', '-', '*', '/','sin','cos','tan']))
-    #         raiz.left = self.build(profundidad_maxima - 1)
-    #         raiz.right = self.build(profundidad_maxima - 1)
-    #         return raiz
-
     def build(self, profundidad_maxima):
         if profundidad_maxima == 0:
             # Cuando llegamos a la profundidad máxima, creamos una hoja con un número aleatorio

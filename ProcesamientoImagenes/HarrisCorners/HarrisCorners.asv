@@ -1,0 +1,27 @@
+imgGray = imread("lena_gray_256.tif");
+
+% 1 es 3x3
+% 2 es 5x5
+
+%Prefilter
+nneighbors = 2;
+%PreFilter
+
+Hpx = [2 4 2]/9;
+Hpy = []
+
+Hp = Hpx .* Hpy;
+
+%Horizontal and vertical  derivate
+Hsx = [-1 0 1; -2 0 2; -1 0 1];
+Hsy = [-1 -2 -1; 0 0 0; 1 2 1];
+nneighbors = 1;
+Ix = convolucion2D(imgGray,nneighbors,Hsx);
+Ix = abs(Ix);
+Iy = convolucion2D(imgGray,nneighbors,Hsy);
+Iy = abs(Iy);
+
+%Compute the local structure matrix M(u, v):
+A = Ix.^2;
+B = Iy.^2;
+C = Ix .* Iy;

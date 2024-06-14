@@ -148,26 +148,35 @@ class PGenetica:
     
 
     def generateMuta(self,Tree):
-        print("Iniciamos la Muta Este es el mejor")
-        mutaTree = copy.deepcopy(Tree)
-        node = self.seleccionNode(mutaTree)
-        value = node[1].value
-        temp = None        
-        #Verficamos si esl valor es un numero un operador o una funcion
-        if value.isdigit():
-            temp = [str(numero) for numero in range(10) if str(numero) != value]
-        elif value in self.operators:
-            temp = self.operators
-        elif value in self.functions:
-            temp = self.functions
-        else:
-            print("El value no encontraod")
-        if value != "X":
-            posibles = [temp[i] for i in range(len(temp)) if temp[i] != value]
-            nuevoValue = random.choice(posibles)
-            mutaTree[node[0]].value = nuevoValue
-            # list(Tree)[node[0]].value = nuevoValue
-        return mutaTree
+        try:
+            print("Iniciamos la Muta Este es el mejor")
+            # mutaTree = copy.deepcopy(Tree)
+            mutaTree = Tree
+            node = self.seleccionNode(mutaTree)
+            value = node[1].value
+            temp = None        
+            #Verficamos si esl valor es un numero un operador o una funcion
+            if value.isdigit():
+                temp = [str(numero) for numero in range(10) if str(numero) != value]
+            elif value in self.operators:
+                temp = self.operators
+            elif value in self.functions:
+                temp = self.functions
+            else:
+                print("El value no encontraod")
+            if value != "X":
+                posibles = [temp[i] for i in range(len(temp)) if temp[i] != value]
+                nuevoValue = random.choice(posibles)
+                for i, node in enumerate(mutaTree):
+                    print(f"Índice {i}: {node.value}")
+                    if i == node[0]:
+                        node.value = nuevoValue 
+                # mutaTree[node[0]].value = nuevoValue
+                # list(Tree)[node[0]].value = nuevoValue
+            return mutaTree
+        except Exception as e:
+            print("Error en generar muta: " + str(e))
+            return mutaTree
     
     def validarTipo(self, valueN1, valueN2):
         # print(valueN1,valueN2)
