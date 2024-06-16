@@ -5,6 +5,8 @@ import numpy as np
 import random
 import copy
 import math
+import warnings
+
 class PGenetica:
 
     def __init__(self,X_true,y_true,limite):
@@ -23,7 +25,6 @@ class PGenetica:
         i=0
         while i < poblacionSize:
             Tree = self.objTree.build(profundidad)
-            print(i)
             expresion,y_predict,mse,isValida = self.generateInfo(Tree)
             poblacion.append({"tree":Tree, "expresion":expresion,"y_predict":y_predict,"mse":mse, "isValida":isValida})
             i+=1
@@ -217,10 +218,10 @@ class PGenetica:
     
     def evaluar_expresion(self, expresion,X):
         try:
-            return round(eval(expresion, {'sin': math.sin, 'cos': math.cos, 'tan': math.tan,"X": X , 'log' :math.log}),4 )
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=RuntimeWarning)
+                return round(eval(expresion, {'sin': math.sin, 'cos': math.cos, 'tan': math.tan,"X": X , 'log' :math.log}),4 )
         except ZeroDivisionError:
-            # print("Error: ZeroDivisionError")
             return None
         except Exception as e:
-            # print("Error: Expresión inválida")
             return None
