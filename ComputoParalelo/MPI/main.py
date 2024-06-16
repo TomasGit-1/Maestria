@@ -3,6 +3,7 @@ from binarytree import Node,build
 from sklearn.datasets import make_regression
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 # Generar datos de entrada (X)
 np.random.seed(42)
@@ -10,28 +11,18 @@ X = np.linspace(1, 2 * np.pi, 100)
 # Añadir ruido a los datos3
 y = np.sin(X) + np.random.normal(0, 0.1, X.shape)
 
-objGenetica = PGenetica(X,y)
-poblacion = objGenetica.generatePoblacionAleatoria(poblacionSize=8)
+objGenetica = PGenetica(X,y,limite=200)
+poblacion = objGenetica.generatePoblacionAleatoria(poblacionSize=100,profundidad=4)
 print("Primera geneacion")
-# for i in range(len(poblacion)):
-#     print(poblacion[i]["tree"])
-# print(30*"#")
 
-for i in range(100):
-    poblacion =objGenetica.generateGeneration(poblacion)
+for i in range(10):
+    antiguaGeneracion = poblacion
+    NuevaGeneracion =objGenetica.generateGeneration(antiguaGeneracion)
+    """
+        Tomamso los mejores 50% de la Antigua Generacion y los 50% mejores de la nmueva generaion
+    """
+    poblacion = antiguaGeneracion[len(antiguaGeneracion)//2:] + NuevaGeneracion[len(NuevaGeneracion)//2:]
 
-# print("Ultima geneacion")
-# for i in range(len(poblacion)):
-#     print(poblacion[i]["tree"])
-print(30*"#")
-
-
-
-# # Graficar los datos
-# plt.scatter(X, y, color='blue', label='Datos')
-# plt.plot(X, np.sin(X), color='red', label='Función original (sin(x))')
-# plt.xlabel('X')
-# plt.ylabel('y')
-# plt.title('Datos generados')
-# plt.legend()
-# plt.show()
+# Convertir la lista de diccionarios a DataFrame
+df = pd.DataFrame(poblacion)
+df.to_csv("poblacion.csv")
