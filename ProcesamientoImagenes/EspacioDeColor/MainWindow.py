@@ -1,89 +1,67 @@
 import cv2
-from PyQt5.QtWidgets import QApplication, QLabel, QHBoxLayout, QVBoxLayout, QWidget, QSlider, QSpinBox
+from PyQt5.QtWidgets import QApplication, QLabel, QHBoxLayout, QVBoxLayout, QWidget, QSlider, QSpinBox,QPushButton,QColorDialog
 from PyQt5.QtCore import pyqtSignal, QThread, Qt
 from PyQt5.QtCore import QThread, Qt, QTimer
 from PyQt5.QtGui import QImage, QPixmap
-# from CameraThread import CameraThread
 import cv2 as cv
 import numpy as np
 
 class MainWindow(QWidget):
     lower_blue = np.array([50, 50, 50])
     upper_blue = np.array([130, 255, 255])
+
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("OpenCV and PyQt5 Example")
-        self.setupUI()
-        self.camera = cv.VideoCapture(0)
+
+        self.video_label = QLabel()
+        self.mask_label = QLabel()
+        self.res_label = QLabel()
+        self.initUI()
+        self.cap = cv.VideoCapture(0)
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_frame)
-        self.timer.start(30)
-        self.lower_blue = np.array([50, 50, 50])
-        self.upper_blue = np.array([130, 255, 255])
+        self.timer.start(10) 
+        self.video_label.mousePressEvent = self.mouse_click_event
+        self.lower_blue = np.array([0, 0, 0])
+        self.upper_blue = np.array([179, 255, 255])
 
-    def setupUI(self):
-        self.label_original = QLabel(self)
-        self.label_mask = QLabel(self)
-        self.label_result = QLabel(self)
-
-        self.label_original.setFixedSize(320, 240)  
-        self.label_mask.setFixedSize(320, 240)      
-        self.label_result.setFixedSize(320, 240) 
-
-        self.slider_hue_lower = self.create_slider("Hue Lower", self.lower_blue, 0)
-        self.slider_hue_upper = self.create_slider("Hue Upper", self.upper_blue, 0)
-
-        control_layout = QVBoxLayout()
-        control_layout.addWidget(self.slider_hue_lower)
-        control_layout.addWidget(self.slider_hue_upper)
-        
-        layout = QHBoxLayout(self)
-        layout.addWidget(self.label_original)
-        layout.addWidget(self.label_mask)
-        layout.addWidget(self.label_result)
-        layout.addWidget(self.slider_hue_lower)
-        layout.addLayout(control_layout)
-
+    def initUI(self):
+        layout = QHBoxLayout()
+        layout.addWidget(self.video_label)
+        layout.addWidget(self.mask_label)
+        layout.addWidget(self.res_label)
         self.setLayout(layout)
-    
-    def create_slider(self, label_text, color_array, initial_value):
-        slider = QSlider(Qt.Horizontal)
-        slider.setMinimum(0)
-        slider.setMaximum(255)
-        slider.setValue(color_array[0])
-        slider.valueChanged.connect(lambda value, array=color_array, index=0: self.update_color(value, array, index))
-        return slider
-
-    def update_lower_blue(self):
-        self.lower_blue = np.array([self.slider_hue_lower.value(),
-                                    self.slider_saturation_lower.value(),
-                                    self.slider_value_lower.value()])
-
-    def update_color(self, value, color_array, index):
-        print(f"Update {value} ")
-        color_array[index] = value
+        self.setWindowTitle('Color Detection')
 
     def update_frame(self):
-        ret, frame = self.camera.read()
+        ret, frame = self.cap.read()
         if ret:
             hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
-            lower_blue = np.array([50, 50, 50])
-            upper_blue = np.array([130, 255, 255])
-            mask = cv.inRange(hsv, lower_blue, upper_blue)
+            mask = cv.inRange(hsv, self.lower_blue, self.upper_blue)
             res = cv.bitwise_and(frame, frame, mask=mask)
+            self.update_label(self.video_label, frame)
+            self.update_label(self.mask_label, mask)
+            self.update_label(self.res_label, res)
 
-            self.display_frame(frame, self.label_original)
-            self.display_frame(mask, self.label_mask)
-            self.display_frame(res, self.label_result)
+    def update_label(self, label, image):
+        image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
+        h, w, ch = image.shape
+        bytes_per_line = ch * w
+        convert = QImage(image.data, w, h, bytes_per_line, QImage.Format_RGB888)
+        p = convert.scaled(640, 480, aspectRatioMode=Qt.KeepAspectRatio)
+        label.setPixmap(QPixmap.fromImage(p))
 
-    def display_frame(self, frame, label):
-        frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
-        height, width, channel = frame.shape
-        bytesPerLine = 3 * width
-        qImg = QImage(frame.data, width, height, bytesPerLine, QImage.Format_RGB888)
-        label.setPixmap(QPixmap.fromImage(qImg))
-        label.setAlignment(Qt.AlignCenter)
-
-    def closeEvent(self, event):
-        self.camera.release()
-        event.accept()
+    def mouse_click_event(self, event):
+        x = event.pos().x()
+        y = event.pos().y()
+        ret, frame = self.cap.read()
+        if ret:
+            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            color_rgb = frame_rgb[y, x]
+            color_rgb_reshaped = np.uint8([[color_rgb]]) 
+            color_hsv = cv2.cvtColor(color_rgb_reshaped, cv2.COLOR_RGB2HSV)[0][0]
+            margin = np.array([10, 50, 50])
+            self.lower_blue = np.maximum(color_hsv - margin, [0, 0, 0])
+            self.upper_blue = np.minimum(color_hsv + margin, [179, 255, 255])
+            self.update_frame()
+            print(f"Color RGB en coordenadas ({x}, {y}): {color_rgb} : Color HSV {color_hsv}")
