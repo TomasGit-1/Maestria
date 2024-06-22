@@ -32,28 +32,23 @@ class ANN():
         self.W_hidden = []
         self.bias_hidden = []
 
-        self.configurationHL = []
-        for i in range(self.hiddenLayers):
-            tempConfiguration ={
-                "capa":i,
-                "T" : list(range(0, self.param_e_o)),
-                "W" : np.random.randn(self.N, self.M),
-                "B" : np.zeros((1, self.M)),
-                "TF": np.random.randint(0,6)
-            }
-            self.configurationHL.append(tempConfiguration)
-            
+        self.configurationHL = [{
+            "capa": i,
+            "T": list(range(0, self.param_e_o)),
+            "W": np.random.randn(self.N, self.M),
+            "B": np.zeros((1, self.M)),
+            "TF": np.random.randint(0, 6)
+        } for i in range(self.hiddenLayers)]
+
         logging.info("Generating configuration output layer")
-        self.configurationOL = []
-        for i in range(self.outputLayer):
-            tempConfiguration ={
-                "capa":i,
-                "T" : list(range(0, self.param_o_s)),
-                "W" : np.random.randn(self.N, self.M),
-                "B" : np.zeros((1, self.M)),
-                "TF": np.random.randint(0,6)
-            }
-            self.configurationOL.append(tempConfiguration)
+        self.configurationOL = [{
+            "capa":i,
+            "T" : list(range(0, self.param_o_s)),
+            "W" : np.random.randn(self.N, self.M),
+            "B" : np.zeros((1, self.M)),
+            "TF": np.random.randint(0,6)
+        }for i in range(self.outputLayer)]
+         
         
     def forward(self):
         #Implementation de una sola capa
