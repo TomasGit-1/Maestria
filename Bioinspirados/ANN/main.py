@@ -3,27 +3,28 @@ from ANN import ANN
 
 # Ejemplo de entrenamiento y uso de la red neuronal
 if __name__ == "__main__":
-    # Datos de entrada y salida de ejemplo
     X = np.array([[0, 0],
                   [0, 1],
                   [1, 0],
-                  [1, 1]])
-    
+                  [1, 1]])    
     y = np.array([[0],
                   [1],
                   [1],
                   [0]])
     
-    # Crear una instancia de la red neuronal con 2 neuronas en la capa oculta
-    nn = ANN(input_size=2, hidden_size=4, output_size=1)
+    # Crear la red neuronal
+    ann = ANN(inputLayer=2,
+                hiddenLayers=2,
+                outputLayer=1,
+                learningRate=0.1,
+                X_true = X,
+                Y_true = y)
     
     # Entrenar la red neuronal
-    nn.train(X, y, epochs=10000, learning_rate=0.1)
+    ann.train()
     
-    # Hacer predicciones
-    predictions = nn.predict(X)
-    
-    # Mostrar resultados
-    print("Predicciones:")
-    for i in range(len(X)):
-        print(f"Datos de entrada: {X[i]}, Predicción: {predictions[i]}")
+    # # Uso de la red neuronal
+    # print(ann.predict(np.array([0, 0])))
+    # print(ann.predict(np.array([0, 1])))
+    # print(ann.predict(np.array([1, 0])))
+    # print(ann.predict(np.array([1, 1])))

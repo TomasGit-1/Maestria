@@ -1,39 +1,53 @@
 import numpy as np
 
 class ANN():
-    def __init__(self, input_size, hidden_size, output_size):
-        self.input_size = input_size
-        self.hidden_size = hidden_size
-        self.output_size = output_size
+    def __init__(self, inputLayer, hiddenLayers, outputLayer,learningRate,X_true, Y_true):
+        print("Iniciamos las red neuronales")
+        self.inputLayer = inputLayer
+        self.hiddenLayers = hiddenLayers
+        self.outputLayer = outputLayer
+        self.learningRate = learningRate
+        self.X_true = X_true
+        self.Y_true = Y_true
 
-        self.weightsHidden = np.random.uniform(-1,0,self.hidden_size)
-        self.biasHidden =  np.random.uniform(-1,0,self.hidden_size)
+    def activationFuntions(self, ID=0):
+        activationFuntions ={
+            0:{"name":"Logistic",          "Label":"LS",  "fx": self.logistic},
+            1:{"name":"Hyperbolic Tangent","Label":"HT",  "fx": self.tanhiper},
+            2:{"name":"Sinusoidal",        "Label":"SN",  "fx": self.sinusoidal},
+            3:{"name":"Gaussian",          "Label":"GS",  "fx": self.gaussian},
+            4:{"name":"Linear",            "Label":"LN",  "fx": self.linear},
+            5:{"name":"Hard limit",        "Label":"HL",  "fx": self.HardLimit},
+            6:{"name":"RectifiedLinear",   "Label":"RL",  "fx": self.Relu},
+        }
+        return activationFuntions[ID]
 
-        self.weightsOutput = np.random.uniform(-1,0,self.hidden_size)
-        self.biasOutput =  np.random.uniform(-1,0,self.hidden_size)
+    def train(self):
+        opcionFx = self.activationFuntions(1)
+        FAx = opcionFx["fx"]
+        y = FAx(self.X_true)
+        print(f'Función de activación: {opcionFx["name"]}')
+        print(f'Entrada: {self.X_true}')
+        print(f'Salida: {y}')
+        print('---')
 
-    
-    def sigmoid(self, x):
+    def logistic(self, x):
         return 1 / (1 + np.exp(-x))
     
-    def forward(self, X):
-        hLActivation = np.dot(X, self.weightsHidden) + self.biasHidden
-        hLOutput = self.sigmoid(hLActivation)
-        fOActivation = np.dot(hLOutput, self.weights_output) + self.bias_output
-        finalOutput = self.sigmoid(fOActivation)
-
-        error = y - finalOutput
+    def tanhiper(self,x):
+        return np.tanh(x)
     
-    def train(self, X, y, epochs=1000, learning_rate=0.01):
+    def sinusoidal(self, x):
+        return np.sin(x)
 
-        for epoch in range(epochs):
-            hLActivation = np.dot(X, self.weightsHidden) + self.biasHidden
-            hLOutput = self.sigmoid(hLActivation)
-            fOActivation = np.dot(hLOutput, self.weights_output) + self.bias_output
-            finalOutput = self.sigmoid(fOActivation)
+    def gaussian(self, x):
+        return np.exp(- (x ** 2))
 
-            error = y - finalOutput
+    def linear(self, x):
+        return x
 
-
-        
-        
+    def HardLimit(self, x):
+        return np.where(x >= 0, 1, 0)
+    
+    def Relu(self, x):
+        return np.maximum(0, x)
