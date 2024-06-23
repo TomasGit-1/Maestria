@@ -1,5 +1,7 @@
 from sklearn.datasets import make_classification
 import matplotlib.pyplot as plt
+from ucimlrepo import fetch_ucirepo 
+
 
 def generateSample(n_features, n_classes):
     random_state = 42 
@@ -15,3 +17,16 @@ def paintXYPlot(X,y):
     plt.ylabel('Feature 2')
     plt.colorbar()
     plt.show()
+
+
+def balance_scale():  
+    balance_scale = fetch_ucirepo(id=12) 
+
+    X = balance_scale.data.features 
+    y = balance_scale.data.targets 
+    return X, y
+    # metadata 
+    print(balance_scale.metadata) 
+    
+    # variable information 
+    print(balance_scale.variables) 

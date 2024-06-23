@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import logging
 import math
 class ANN():
@@ -7,10 +8,17 @@ class ANN():
         logging.info("Initialized ANN")
         self.X_true = X_true
         self.Y_true = Y_true
+        self.validateConversion()
         self.configuration = [] 
         self.DirectCodificaction()
 
-
+    def validateConversion(self):
+        logging.info("Validando si X and y son nummpy arrasy")
+        if isinstance(self.X_true, pd.DataFrame):
+            self.X_true =self.X_true.to_numpy()
+        if isinstance(self.Y_true, pd.DataFrame):
+            self.Y_true =np.array(self.Y_true["class"].tolist())
+        
     def DirectCodificaction(self):
         logging.info("Iniciamos la codificación directa")
         self.N = self.X_true.shape[1]
@@ -35,8 +43,8 @@ class ANN():
         self.configurationHL = [{
             "capa": i,
             "T": list(range(0, self.param_e_o)),
-            "W": np.random.randn(self.N, self.M),
-            "B": np.zeros((1, self.M)),
+            "W" : self.initialize_weights(self.N, self.M),
+            "B" : self.initialize_biases(self.M),
             "TF": np.random.randint(0, 6)
         } for i in range(self.hiddenLayers)]
 
@@ -44,18 +52,13 @@ class ANN():
         self.configurationOL = [{
             "capa":i,
             "T" : list(range(0, self.param_o_s)),
-            "W" : np.random.randn(self.N, self.M),
-            "B" : np.zeros((1, self.M)),
+            "W" : self.initialize_weights(self.N, self.M),
+            "B" : self.initialize_biases(self.M),
             "TF": np.random.randint(0,6)
         }for i in range(self.outputLayer)]
          
         
     def forward(self):
-        #Implementation de una sola capa
-        # activationFunc = self.ActivationFunctions(6)
-        # hidden_input = np.dot(self.X_true, self.W) + self.b
-        # hidden_output = activationFunc["fx"](hidden_input)
-        # return hidden_output
         activations = []
         logging.info("Forward cappas ocultas")
         for i in range(self.hiddenLayers):
@@ -65,12 +68,14 @@ class ANN():
             activations.append(hidden_output)
         
         # Capa de salida
+        outputs = []
         for i in range(self.outputLayer):
             output_activation = self.ActivationFunctions(self.configurationOL[i]["TF"])
-            final_output = np.dot(self.X_true,  self.configurationHL[i]["W"] +  self.configurationHL[i]["B"])
+            final_output = np.dot(activations[-1],  self.configurationOL[i]["W"] +  self.configurationOL[i]["B"])
             Y_pred = output_activation["fx"](final_output)
+            outputs.append(Y_pred)
 
-        return Y_pred
+        return outputs
     
     def train(self):
         hidden_output = self.forward()
@@ -87,6 +92,18 @@ class ANN():
             6:{"name":"RectifiedLinear",   "Label":"RL",  "fx": self.Relu},
         }
         return activationFunctions[ID]
+
+    def initialize_weights(self, N, M):
+        return np.random.randn(N, M)
+
+
+    def mean_squared_error(y_pred, y_true):
+        return np.mean((y_pred - y_true) ** 2)
+
+    def initialize_biases(self, M):
+        # Inicialización de sesgos a cero
+        return np.zeros((1, M))
+
 
     def logistic(self, x):
         return 1 / (1 + np.exp(-x))
