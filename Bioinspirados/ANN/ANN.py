@@ -1,11 +1,13 @@
 import numpy as np
 import pandas as pd
-import logging
 import math
+pd.options.mode.chained_assignment = None
 class ANN():
-    logging.basicConfig(level=logging.INFO)
-    def __init__(self, X_true, Y_true):
-        logging.info("Initialized ANN")
+
+    def __init__(self,log, nameDataset, X_true, Y_true):
+        self.log = log
+        self.log.info("Initialized ANN")
+        self.nameDataset = nameDataset
         self.X_true = X_true
         self.Y_true = Y_true
         self.validateConversion()
@@ -13,73 +15,80 @@ class ANN():
         self.DirectCodificaction()
 
     def validateConversion(self):
-        logging.info("Validando si X and y son nummpy arrasy")
+        self.log.info("Validando si X and y son nummpy arrasy")
         if isinstance(self.X_true, pd.DataFrame):
             self.X_true =self.X_true.to_numpy()
         if isinstance(self.Y_true, pd.DataFrame):
-            self.Y_true =np.array(self.Y_true["class"].tolist())
+            self.Y_true =np.array(self.Y_true["classification"].tolist())
         
     def DirectCodificaction(self):
-        logging.info("Iniciamos la codificación directa")
+        
+        self.log.info("Iniciamos la codificación directa")
         self.N = self.X_true.shape[1]
+        self.numNeuronas = self.Y_true.shape[0]
         valores, conteos = np.unique(self.Y_true, return_counts=True)
         self.M = valores.shape[0]
         Q = math.ceil((self.N + self.M) + ((self.M + self.N) / 2))
 
-        logging.info("Generating inputlayer , hidden layer and output layer")
+        self.log.info("Generating inputlayer , hidden layer and output layer")
         self.hiddenLayers = Q - (self.M + self.N)
         self.inputLayer = self.N
         self.outputLayer = self.M
 
-        logging.info("Generating dim")
+        self.log.info("Generating dim")
         self.dim = (self.hiddenLayers * (self.N + 3)) + (self.outputLayer * (self.hiddenLayers +3))
         self.param_e_o = self.hiddenLayers * (self.N + 3)
         self.param_o_s = self.outputLayer * (self.hiddenLayers + 3)
-        
-        logging.info("Generating weights and biases")
-        self.W_hidden = []
-        self.bias_hidden = []
 
+        self.log.info(f"Training ANN with {self.nameDataset} capas de entrada {self.N}  capas ocultas {self.hiddenLayers} capas de salida {self.outputLayer}")
+
+        mask = np.random.randint(0, 2, (10, 7))  # Example mask for 10 input neurons to 7 hidden neurons
+        
+        self.log.info("Generating weights and biases")
         self.configurationHL = [{
             "capa": i,
             "T": list(range(0, self.param_e_o)),
-            "W" : self.initialize_weights(self.N, self.M),
-            "B" : self.initialize_biases(self.M),
-            "TF": np.random.randint(0, 6)
+            "W" : np.random.randn(self.numNeuronas,self.N),
+            "B" : np.random.randn(self.numNeuronas,1),
+            "TF": np.random.randint(0, 7)
         } for i in range(self.hiddenLayers)]
 
-        logging.info("Generating configuration output layer")
+        self.log.info("Generating configuration output layer")
         self.configurationOL = [{
             "capa":i,
             "T" : list(range(0, self.param_o_s)),
-            "W" : self.initialize_weights(self.N, self.M),
-            "B" : self.initialize_biases(self.M),
-            "TF": np.random.randint(0,6)
+            "W" : np.random.randn(self.numNeuronas,self.N),
+            "B" : np.random.randn(self.numNeuronas,1),
+            "TF": np.random.randint(0,7)
         }for i in range(self.outputLayer)]
+        print()
          
         
     def forward(self):
-        activations = []
-        logging.info("Forward cappas ocultas")
-        for i in range(self.hiddenLayers):
-            activationFunc = self.ActivationFunctions(self.configurationHL[i]["TF"])
-            hidden_input = np.dot(self.X_true, self.configurationHL[i]["W"]) + self.configurationHL[i]["B"]
-            hidden_output = activationFunc["fx"](hidden_input)
-            activations.append(hidden_output)
-        
-        # Capa de salida
-        outputs = []
-        for i in range(self.outputLayer):
-            output_activation = self.ActivationFunctions(self.configurationOL[i]["TF"])
-            final_output = np.dot(activations[-1],  self.configurationOL[i]["W"] +  self.configurationOL[i]["B"])
-            Y_pred = output_activation["fx"](final_output)
-            outputs.append(Y_pred)
-
-        return outputs
+        try:
+            activations = []
+            x = self.X_true.T
+            self.log.info("Forward cappas ocultas")
+            for i in range(self.hiddenLayers):
+                activationFunc = self.ActivationFunctions(self.configurationHL[i]["TF"])
+                y_predict = np.dot(x, self.configurationHL[i]["W"]) #+ self.configurationHL[i]["B"]
+                resulAc = activationFunc["fx"](y_predict)
+                activations.append(resulAc)
+                x = resulAc
+            
+            # Capa de salida
+            outputs = []
+            for i in range(self.outputLayer):
+                output_activation = self.ActivationFunctions(self.configurationOL[i]["TF"])
+                final_output = np.dot(activations[-1],  self.configurationOL[i]["W"] +  self.configurationOL[i]["B"])
+                Y_pred = output_activation["fx"](final_output)
+                outputs.append(Y_pred)
+            return outputs
+        except Exception as e:
+            self.log.error(f"Ocurrio un problema en forward {str(e)}")
     
     def train(self):
         hidden_output = self.forward()
-        print(hidden_output)
       
     def ActivationFunctions(self, ID=0):
         activationFunctions ={
@@ -93,9 +102,8 @@ class ANN():
         }
         return activationFunctions[ID]
 
-    def initialize_weights(self, N, M):
-        return np.random.randn(N, M)
-
+    def initialize_weights(self,):
+        return np.random.randn(self.N)
 
     def mean_squared_error(y_pred, y_true):
         return np.mean((y_pred - y_true) ** 2)
@@ -103,8 +111,7 @@ class ANN():
     def initialize_biases(self, M):
         # Inicialización de sesgos a cero
         return np.zeros((1, M))
-
-
+    
     def logistic(self, x):
         return 1 / (1 + np.exp(-x))
     

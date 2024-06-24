@@ -1,6 +1,7 @@
 from sklearn.datasets import make_classification
 import matplotlib.pyplot as plt
 from ucimlrepo import fetch_ucirepo 
+import pandas as pd
 
 
 def generateSample(n_features, n_classes):
@@ -19,14 +20,25 @@ def paintXYPlot(X,y):
     plt.show()
 
 
-def balance_scale():  
-    balance_scale = fetch_ucirepo(id=12) 
+def downloadDatasets(log, key):  
+    datasets = {
+        "balance":12,
+        "glass":42,
+        "ionosphere":52,
+        "irisplant":53,
+        "wine":109
+    }
+    log.warning("Espera un momento estamos descargando")
+    data = fetch_ucirepo(id = datasets[key]) 
+    X = data.data.features 
+    y = data.data.targets 
+    columClass = y.columns.tolist()
+    if y[columClass[0]].dtype == 'object':
+        y["classification"] = pd.Categorical(y[columClass[0]])
+        y["classification"] = y["classification"].cat.codes
+    else:
+        y['classification'] = y[columClass[0]]
+    log.warning("Terminamos la descargar")
 
-    X = balance_scale.data.features 
-    y = balance_scale.data.targets 
     return X, y
-    # metadata 
-    print(balance_scale.metadata) 
-    
-    # variable information 
-    print(balance_scale.variables) 
+
