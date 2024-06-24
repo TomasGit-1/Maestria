@@ -39,6 +39,6 @@ if __name__ == "__main__":
     X, y = downloadDatasets(logger, nameDataset)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    ann = ANN(log = logger,nameDataset = nameDataset, X_true = X_train, Y_true = y_train)
+    ann = ANN(log = logger,nameDataset = nameDataset, X_true = X_train, Y_true = y_train, neuronal = 5)
     ann.train()
     

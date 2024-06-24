@@ -4,12 +4,13 @@ import math
 pd.options.mode.chained_assignment = None
 class ANN():
 
-    def __init__(self,log, nameDataset, X_true, Y_true):
+    def __init__(self,log, nameDataset, X_true, Y_true,neuronal):
         self.log = log
         self.log.info("Initialized ANN")
         self.nameDataset = nameDataset
         self.X_true = X_true
         self.Y_true = Y_true
+        self.numNeuronas = neuronal
         self.validateConversion()
         self.configuration = [] 
         self.DirectCodificaction()
@@ -22,7 +23,6 @@ class ANN():
             self.Y_true =np.array(self.Y_true["classification"].tolist())
         
     def DirectCodificaction(self):
-        
         self.log.info("Iniciamos la codificación directa")
         self.N = self.X_true.shape[1]
         self.numNeuronas = self.Y_true.shape[0]
@@ -32,7 +32,7 @@ class ANN():
 
         self.log.info("Generating inputlayer , hidden layer and output layer")
         self.hiddenLayers = Q - (self.M + self.N)
-        self.inputLayer = self.N
+        self.input_size  = self.N
         self.outputLayer = self.M
 
         self.log.info("Generating dim")
@@ -40,50 +40,47 @@ class ANN():
         self.param_e_o = self.hiddenLayers * (self.N + 3)
         self.param_o_s = self.outputLayer * (self.hiddenLayers + 3)
 
-        self.log.info(f"Training ANN with {self.nameDataset} capas de entrada {self.N}  capas ocultas {self.hiddenLayers} capas de salida {self.outputLayer}")
-
-        mask = np.random.randint(0, 2, (10, 7))  # Example mask for 10 input neurons to 7 hidden neurons
-        
+        self.log.info(f"Training ANN with {self.nameDataset} Nfeactures {self.input_size }  capas ocultas {self.hiddenLayers} capas de salida {self.outputLayer}")
         self.log.info("Generating weights and biases")
-        self.configurationHL = [{
-            "capa": i,
-            "T": list(range(0, self.param_e_o)),
-            "W" : np.random.randn(self.numNeuronas,self.N),
-            "B" : np.random.randn(self.numNeuronas,1),
-            "TF": np.random.randint(0, 7)
-        } for i in range(self.hiddenLayers)]
 
-        self.log.info("Generating configuration output layer")
-        self.configurationOL = [{
-            "capa":i,
-            "T" : list(range(0, self.param_o_s)),
-            "W" : np.random.randn(self.numNeuronas,self.N),
-            "B" : np.random.randn(self.numNeuronas,1),
-            "TF": np.random.randint(0,7)
-        }for i in range(self.outputLayer)]
-        print()
+        self.W = []
+        self.b = []
+        self.hiddenneuro = np.random.randint(1, 7, size=self.hiddenLayers-1)
+
+        for i, hidden_size in enumerate( self.hiddenneuro):
+            if i == 0:
+                self.W.append(np.random.randn(self.input_size, hidden_size))
+            else:
+                self.W.append(np.random.randn(self.hiddenneuro[i-1], hidden_size))
+            self.b.append(np.zeros((1, hidden_size)))
+        
+
+        # self.configurationHL = [{
+        #     "W" : np.random.randn(self.input_size ,self.hiddenLayers) if i == 0 else np.random.randn(self.hiddenneuro[i-1], hidden_size),
+        #     "B" : np.zeros((1, hidden_size)),
+        #     "TF": np.random.randint(0, 7)
+        # } for hidden_size, i in enumerate( self.hiddenneuro)]
+
+        pass
+
+        # self.log.info("Generating configuration output layer")
+        # self.configurationOL = [{
+        #     "capa":i,
+        #     "T" : list(range(0, self.param_o_s)),
+        #     "W" : np.random.randn(self.input_size ,self.outputLayer),
+        #     "B" : np.random.randn(1,self.input_size ),
+        #     "TF": np.random.randint(0,7)
+        # }for i in range(self.outputLayer)]
+        # print()
          
         
     def forward(self):
         try:
-            activations = []
-            x = self.X_true.T
-            self.log.info("Forward cappas ocultas")
-            for i in range(self.hiddenLayers):
-                activationFunc = self.ActivationFunctions(self.configurationHL[i]["TF"])
-                y_predict = np.dot(x, self.configurationHL[i]["W"]) #+ self.configurationHL[i]["B"]
-                resulAc = activationFunc["fx"](y_predict)
-                activations.append(resulAc)
-                x = resulAc
-            
-            # Capa de salida
-            outputs = []
-            for i in range(self.outputLayer):
-                output_activation = self.ActivationFunctions(self.configurationOL[i]["TF"])
-                final_output = np.dot(activations[-1],  self.configurationOL[i]["W"] +  self.configurationOL[i]["B"])
-                Y_pred = output_activation["fx"](final_output)
-                outputs.append(Y_pred)
-            return outputs
+            layer_input = self.X_true
+            for i in range(len(self.W)):
+                layer_output = np.dot(layer_input, self.W[i]) + self.b[i]
+                layer_input = self.sigmoid(layer_output)
+            return layer_input
         except Exception as e:
             self.log.error(f"Ocurrio un problema en forward {str(e)}")
     
