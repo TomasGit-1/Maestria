@@ -1,8 +1,5 @@
-from sklearn.datasets import make_classification
 from colorlog import ColoredFormatter
 from ucimlrepo import fetch_ucirepo 
-
-import matplotlib.pyplot as plt
 import pandas as pd
 import logging
 import numpy as np
