@@ -1,0 +1,1 @@
+Para instalar las librerias se tiene que crear un virtual enviroment

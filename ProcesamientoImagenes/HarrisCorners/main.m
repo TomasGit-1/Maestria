@@ -1,4 +1,4 @@
-img = imread("tablero.png");
+img = imread("Manual.png");
 
 if ndims(img) == 2
     % La imagen ya está en escala de grises

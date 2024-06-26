@@ -17,7 +17,7 @@ class MainWindow(QWidget):
         self.mask_label = QLabel()
         self.res_label = QLabel()
         self.initUI()
-        self.cap = cv.VideoCapture(0)
+        self.cap = cv.VideoCapture(1)
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_frame)
         self.timer.start(10) 
@@ -31,7 +31,7 @@ class MainWindow(QWidget):
         layout.addWidget(self.mask_label)
         layout.addWidget(self.res_label)
         self.setLayout(layout)
-        self.setWindowTitle('Color Detection')
+        self.setWindowTitle('Dale click sobre un color en el video')
 
     def update_frame(self):
         ret, frame = self.cap.read()

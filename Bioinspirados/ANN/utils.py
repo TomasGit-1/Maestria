@@ -1,8 +1,11 @@
 from sklearn.datasets import make_classification
-import matplotlib.pyplot as plt
+from colorlog import ColoredFormatter
 from ucimlrepo import fetch_ucirepo 
-import pandas as pd
 
+import matplotlib.pyplot as plt
+import pandas as pd
+import logging
+import numpy as np
 
 def generateSample(n_features, n_classes):
     random_state = 42 
@@ -19,6 +22,27 @@ def paintXYPlot(X,y):
     plt.colorbar()
     plt.show()
 
+def configrationLogger():
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO) 
+    formatter = ColoredFormatter(
+        "%(log_color)s%(levelname)-8s%(reset)s %(blue)s%(message)s",
+        datefmt=None,
+        reset=True,
+        log_colors={
+            'DEBUG':    'cyan',
+            'INFO':     'green',
+            'WARNING':  'yellow',
+            'ERROR':    'red',
+            'CRITICAL': 'red,bg_white',
+        },
+        secondary_log_colors={},
+        style='%'
+    )
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+    return logger
 
 def downloadDatasets(log, key):  
     datasets = {
@@ -39,6 +63,9 @@ def downloadDatasets(log, key):
     else:
         y['classification'] = y[columClass[0]]
     log.warning("Terminamos la descargar")
-
+    if isinstance(X, pd.DataFrame):
+        X =X.to_numpy()
+    if isinstance(y, pd.DataFrame):
+        y =np.array(y["classification"].tolist())
     return X, y
 
