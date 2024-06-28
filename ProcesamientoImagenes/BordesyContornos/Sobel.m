@@ -1,6 +1,5 @@
-
-
 imgGray = double(imread("lena_gray_256.tif"));
+imgGray = rgb2gray(imgGray);
 %Sobel
 Hsx = [-1 0 1; -2 0 2; -1 0 1];
 Hsy = [-1 -2 -1; 0 0 0; 1 2 1];
