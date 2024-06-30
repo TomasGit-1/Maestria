@@ -24,6 +24,7 @@ class EvolutionDFC():
                                 xSup=self.xSup, dim=self.dim_indi,
                                 numGenertion = self.t) 
                             for _ in range(self.ns)])
+        pass
     
     def Mutacion(self,xi, pop_temp):
         selecion = np.random.choice(pop_temp,size=2,replace=False)
@@ -49,14 +50,21 @@ class EvolutionDFC():
     
     def ordenar(self, vector):
         return  sorted(vector, key= lambda x: x.fitness)
+    
+    def showVector(self, vector):
+        for i in range(len(vector)):
+            print(f" {i} fitnees {vector[i].fitness} vector {vector[i].vector} ")
         
     def optimize(self, max_it):
         errorGeneration = 10
         gen = 0
         X_ = np.copy(self.X_pop)
+        self.showVector(X_)
         X_ = self.ordenar(X_)
         for i in (range(max_it)):
+            print(10*"#")
             print(f"Generacion {gen}")
+            self.showVector(X_)
             for i in range(len(X_)):
                 X_[i].fitness = self.FObjective(X_[i].vector)
                 pop_temp = [ indi for idx, indi in enumerate(X_) if idx != i]
@@ -68,6 +76,7 @@ class EvolutionDFC():
                     X_[i].fitness = x_hijo_fitness
             gen +=1
         X_ = self.ordenar(X_)
+        self.showVector(X_)
         return X_
 
 def objective_function(vector):
@@ -83,7 +92,7 @@ if __name__ == '__main__':
     #pr Es la probabilidad de cruza
     t ,beta, pr = 0, 1.4 ,0.4
     #Definimos el numero de generacionses
-    max_it = 1000
+    max_it = 3
 
     #Es el tamanio de la poblacion
     ns  =10

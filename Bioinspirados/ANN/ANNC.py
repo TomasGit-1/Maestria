@@ -79,7 +79,6 @@ class ANNC():
                 fx = self.ActivationFunctions(ID = int(self.F_V[i]))
                 Act = fx["fx"](inp_out.T[i])
                 out_s.T[i] = Act
-            self.log.info(f"Esta es la salida de mi red :\n {out_s}")
             return out_s
         except Exception as e:
             print(str(e))
@@ -133,3 +132,8 @@ class ANNC():
 
     def train(self):
         self.forward_propagation(self.X_true, self.W, self.V)
+
+    def accuracy(y_true, y_pred):
+        y_pred_rounded = np.round(y_pred)
+        accuracy = np.mean(y_true == y_pred_rounded)
+        return accuracy

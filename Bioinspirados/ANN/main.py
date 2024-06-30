@@ -6,7 +6,7 @@ if __name__ == "__main__":
     log = configrationLogger()
     useDatasets = True
     if useDatasets:
-        nameDataset = "ionosphere"
+        nameDataset = "irisplant"
         #Empezamos a descargar el datsets
         X, y = downloadDatasets(log, nameDataset)
         configNeurons = None
@@ -25,4 +25,7 @@ if __name__ == "__main__":
         y = np.random.randint(2, size=10)
 
     objANNC = ANNC(log,nameDataset, X, y , configNeurons,useDatasets)
-    objANNC.forward_propagation()
+    y_pred  = objANNC.forward_propagation()
+
+    log.info(f"Esta es la salida de mi red :\n {y_pred }")
+
