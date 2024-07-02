@@ -20,6 +20,8 @@ class EvolutionDFC():
         self.pr = pr
         self.t = t
         self.X_pop=X_pop
+        self.objANNC = ANNC(log =  log)
+
 
     def generatePopulation(self):
         self.X_pop = np.array(
@@ -27,7 +29,6 @@ class EvolutionDFC():
                                 xSup=self.xSup, dim=self.dim_indi,
                                 numGenertion = self.t) 
                             for _ in range(self.ns)])
-        pass
     
     def Mutacion(self,xi, pop_temp):
         selecion = np.random.choice(pop_temp,size=2,replace=False)
@@ -58,10 +59,10 @@ class EvolutionDFC():
         for i in range(len(vector)):
             self.log.info(f" {i} fitnees {vector[i].fitness} vector {vector[i].vector} ")
 
-    def fitnees(self,objANNC):
+    def fitnees(self):
         #Calculamos el fitness
-        y_pred  = objANNC.forward_propagation()    
-        return objANNC.mce(y_pred)
+        y_pred  = self.objANNC.forward_propagation()    
+        return self.objANNC.mce(y_pred)
         
     def optimize(self, max_it,X, y):
         errorGeneration = 10
@@ -70,17 +71,17 @@ class EvolutionDFC():
         # self.showVector(X_)
         X_ = self.ordenar(X_)
         for _ in (range(max_it)):
-            # print(10*"#")
-            # print(f"Generacion {gen}")
-            # self.showVector(X_)
             for i in range(len(X_)):
-               # X_[i].fitness = self.FObjective(X_[i].vector)
-                objANNC = ANNC(log =  self.log, nameDataset="",X_true=X, Y_true=y,configNeurons=X_[i].vector,N=X_[i].N,M=X_[i].M,H=X_[i].H)
-                X_[i].fitness= self.fitnees(objANNC)
+                self.objANNC.getData(nameDataset="",X_true=X, Y_true=y,configNeurons=X_[i].vector,N=X_[i].N,M=X_[i].M,H=X_[i].H)
+                X_[i].fitness= self.fitnees()
                 pop_temp = [ indi for idx, indi in enumerate(X_) if idx != i]
                 ui = self.Mutacion(X_[i], pop_temp)
                 x_hijo_vector = self.Cruza(ui, X_[i].vector)
-                x_hijo_fitness = self.FObjective(x_hijo_vector)
+                self.objANNC.getData(nameDataset="",X_true=X, Y_true=y,configNeurons=x_hijo_vector,N=X_[i].N,M=X_[i].M,H=X_[i].H)
+                x_hijo_fitness = self.fitnees()
+
+                # X_[i].fitness= self.fitnees(self.objANNC)
+                # x_hijo_fitness = self.FObjective(x_hijo_vector)
                 if x_hijo_fitness < X_[i].fitness:
                     X_[i].vector = x_hijo_vector
                     X_[i].fitness = x_hijo_fitness

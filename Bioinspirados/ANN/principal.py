@@ -17,15 +17,15 @@ if __name__== "__main__":
     valores, conteos = np.unique(y, return_counts=True)
     M = valores.shape[0]
     #Es el tamanio de la poblacion
-    ns  =4
+    ns  =10
     PR= ParametrosRed(N,M,ns)
     population=PR.Poblacion()
     #inicio de la metahuristica
     #Definimos entradas
     #pr Es la probabilidad de cruza
-    t ,beta, pr = 0, 1.4 ,0.4
+    t ,beta, pr = 0, 1.4 ,0.2
     #Definimos el numero de generacionses
-    max_it = 3
+    max_it = 100
 
     
     ObjEvolutionDFC = EvolutionDFC(

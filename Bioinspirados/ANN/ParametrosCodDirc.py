@@ -1,8 +1,9 @@
 import numpy as np
 import math 
-from utils import  downloadDatasets
+from utils import  downloadDatasets,configrationLogger
 import random 
-
+from ANNC import ANNC
+log = configrationLogger()
 
 class Individuo():
     def __init__(self, vector=None, numGenertion=0,N=None,M=None,H=None)-> None:
@@ -14,8 +15,6 @@ class Individuo():
         self.H=H
 
 class ParametrosRed():
-
-
     def __init__(self,N,M,Pob_size)-> None:
         self.N=N
         self.M=M
@@ -28,15 +27,12 @@ class ParametrosRed():
         self.Pob_size=Pob_size
 
     def Individuo(self,size):
-        vector_indiviuo=[]
         self.T=2**(self.N)
         funcion_act= random.randint(0,6)
         Tr= random.randint(0,self.T-1)
-        vector_linspace = np.linspace(-10,10,size)
+        vector_linspace = np.linspace(-10,10,size, dtype=np.float32)
         bias= np.random.rand()
         return np.concatenate(([Tr], vector_linspace,[bias], [funcion_act]))
-
-
 
     def Poblacion(self):
         #Creamos el vector X con los datos calculados
@@ -49,15 +45,18 @@ class ParametrosRed():
 
         return Population
 
-# if __name__== "__main__":
 
-#     X, y = downloadDatasets(log, "balance")
-#     N=X.shape[1]
-#     valores, conteos = np.unique(y, return_counts=True)
-#     M = valores.shape[0]
-#     PR= ParametrosRed(N,M,10)
-#     PR.H
-#     print(PR.H,PR.dim,PR.dim_eo,PR.dim_os)
-#     PR.Poblacion()
-#     print(PR.Poblacion())
-#     pass
+
+if __name__== "__main__":
+
+    X, y = downloadDatasets(log, "wine")
+    N=X.shape[1]
+    valores, conteos = np.unique(y, return_counts=True)
+    M = valores.shape[0]
+    PR= ParametrosRed(N,M,1)
+    # print(PR.H,PR.dim,PR.dim_eo,PR.dim_os)
+    Population = PR.Poblacion()
+    log.warning("wine")
+    log.info(f"Info N:{N} - M :{M} - H : {PR.H} - dim: {PR.dim} - dim_eo: {PR.dim_eo} - dim_os {PR.dim_os}")
+    log.info(f"Vector: {Population[0].vector}")
+    

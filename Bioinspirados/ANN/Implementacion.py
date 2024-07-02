@@ -4,16 +4,23 @@ import math
 # from utils import configrationLogger, downloadDatasets
 from functAct import logistic, tanhiper, sinusoidal,gaussian,linear,HardLimit,Relu
 pd.options.mode.chained_assignment = None
+
+class Individuo():
+    def __init__(self, xInf=0, xSup=0, dim=0, numGenertion=0)-> None:
+        self.vector = np.random.uniform(xInf, xSup, size = dim)
+        self.fitness = float("inf")
+        self.numGenertion = numGenertion
+
 class ANNC():
     def __init__(self,log):
         self.log = log
         self.log.info("Initialized ANNC")
         
     def getData(self,nameDataset, X_true = None, Y_true = None , configNeurons= None,N=None,M=None,H=None):
+        self.log.info(f"Update data")
         self.X_true = X_true
         self.nameDataset = nameDataset
         self.Y_true = Y_true
-        self.log.info(f"Using manual configuration")
         self.W,self.F_W,self.V,self.F_V = self.generateConfiguracion(self.log, configNeurons, N,M,H)
 
     def forward_propagation(self):
@@ -91,32 +98,85 @@ class ANNC():
 
     def mce(self,y_pred):
         return  np.mean(self.Y_true == y_pred)
-
-# #if __name__ == "__main__":
-#     log = configrationLogger()
-#     useDatasets = True
-#     if useDatasets:
-#         nameDataset = "balance"
-#         #Empezamos a descargar el datsets
-#         X, y = downloadDatasets(log, nameDataset)
-#         configNeurons = None
-#     else:
-#         nameDataset = "Manual"
-#         #Ocupamos un vector y X estatico
-#         configNeurons = np.array([
-#                 20, 0.1, 0.2, 0.3, 0.4, 0.5,0.6, 5,
-#                 5, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1,
-#                 25, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2 ,2,
-#                 5, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 3,
-#                 10,0.7,0.8,0.9,1.0,1.2,4,
-#                 4,0.7,0.8,0.9,1.0,1.2,5,
-#             ])
-#         X = np.random.rand(10, 5)
-#         y = np.random.randint(2, size=10)
     
-#     objANNC = ANNC(log,nameDataset, X, y , configNeurons,useDatasets)
-#     y_pred  = objANNC.forward_propagation()    
-#     seleccion=objANNC.MCE(y_pred)
-#     accurancy= objANNC.accuracy(y,seleccion)
-#     log.info(f"Esta es el valor del accurancy:\n {accurancy }")
-#     log.info(f"Esta es la salida de mi red :\n {y_pred }")
+class EvolutionDFC():
+    def __init__(self,log, xInf=None, xSup=None, dim_indi=None, ns=None,problem=None, beta=None, pr=None, t=None,X_pop =None):
+        self.log = log
+        self.xInf = xInf
+        self.xSup = xSup
+        self.dim_indi = dim_indi
+        self.ns = ns
+        self.FObjective = problem
+        self.beta = beta
+        self.pr = pr
+        self.t = t
+        self.X_pop=X_pop
+        self.objANNC = ANNC(log =  log)
+
+    def generatePopulation(self):
+        self.X_pop = np.array(
+            [Individuo(xInf=self.xInf, 
+                                xSup=self.xSup, dim=self.dim_indi,
+                                numGenertion = self.t) 
+                            for _ in range(self.ns)])
+    
+    def Mutacion(self,xi, pop_temp):
+        selecion = np.random.choice(pop_temp,size=2,replace=False)
+        x2 = selecion[0]
+        x3 = selecion[1]
+        ui = xi.vector + self.beta * (x2.vector - x3.vector)
+        return ui
+    
+    def Cruza(self, U , x_actual):
+        #Cruza Exponencial
+        J = []
+        nx = len(U)-1
+        j = np.random.normal(0, nx)
+        while True:
+            J.append(j+1)
+            j = (j + 1) % nx
+            #round(np.random.rand(), 4)
+            U01 = np.random.rand()
+            if U01 >= self.pr or len(J) == nx:
+                break
+        return np.array([U[j] if U[j] in J else x_actual[j] for j in range(len(U))])
+    
+    def ordenar(self, vector):
+        return  sorted(vector, key= lambda x: x.fitness)
+    
+    def showVector(self, vector):
+        for i in range(len(vector)):
+            self.log.info(f" {i} fitnees {vector[i].fitness} vector {vector[i].vector} ")
+
+    def fitnees(self):
+        #Calculamos el fitness
+        y_pred  = self.objANNC.forward_propagation()    
+        return self.objANNC.mce(y_pred)
+        
+    def optimize(self, max_it,X, y):
+        errorGeneration = 10
+        gen = 0
+        X_ = np.copy(self.X_pop)
+        # self.showVector(X_)
+        X_ = self.ordenar(X_)
+        for _ in (range(max_it)):
+            for i in range(len(X_)):
+                self.objANNC.getData(nameDataset="",X_true=X, Y_true=y,configNeurons=X_[i].vector,N=X_[i].N,M=X_[i].M,H=X_[i].H)
+                X_[i].fitness= self.fitnees()
+                pop_temp = [ indi for idx, indi in enumerate(X_) if idx != i]
+                ui = self.Mutacion(X_[i], pop_temp)
+                x_hijo_vector = self.Cruza(ui, X_[i].vector)
+                self.objANNC.getData(nameDataset="",X_true=X, Y_true=y,configNeurons=x_hijo_vector,N=X_[i].N,M=X_[i].M,H=X_[i].H)
+                x_hijo_fitness = self.fitnees()
+
+                # X_[i].fitness= self.fitnees(self.objANNC)
+                # x_hijo_fitness = self.FObjective(x_hijo_vector)
+                if x_hijo_fitness < X_[i].fitness:
+                    X_[i].vector = x_hijo_vector
+                    X_[i].fitness = x_hijo_fitness
+            gen +=1
+        X_ = self.ordenar(X_)
+        # self.showVector(X_)
+        return X_
+
+
