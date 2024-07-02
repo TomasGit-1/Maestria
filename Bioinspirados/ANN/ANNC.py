@@ -2,14 +2,12 @@ import numpy as np
 import pandas as pd
 import math
 from utils import configrationLogger, downloadDatasets
-log = configrationLogger()
 from functAct import logistic, tanhiper, sinusoidal,gaussian,linear,HardLimit,Relu
 
 pd.options.mode.chained_assignment = None
 class ANNC():
-    def __init__(self,nameDataset, X_true = None, Y_true = None , configNeurons= None,N=None,M=None,H=None):
-
-        self.log = log = configrationLogger()
+    def __init__(self,log,nameDataset, X_true = None, Y_true = None , configNeurons= None,N=None,M=None,H=None):
+        self.log = log
         self.log.info("Initialized ANNC")
         self.X_true = X_true
         self.nameDataset = nameDataset
@@ -19,7 +17,7 @@ class ANNC():
    
         self.W,self.F_W,self.V,self.F_V = self.generateConfiguracion(self.log, configNeurons, N,M,H)
 
-        self.log.warning(f" Configuracion \n W: = {self.W} \n F_W: {self.F_W} , \n V: {self.V} \nF_V :{self.F_V} " )
+        # self.log.warning(f" Configuracion \n W: = {self.W} \n F_W: {self.F_W} , \n V: {self.V} \nF_V :{self.F_V} " )
 
     #Se obtiene el error de clasificación media 
     def MCE(self,y_predict):
@@ -82,10 +80,14 @@ class ANNC():
                 fx = self.ActivationFunctions(ID = int(self.F_V[i]))
                 Act = fx["fx"](inp_out.T[i])
                 out_s.T[i] = Act
-            return out_s
+            softmaxImp = self.softmax(out_s)
+            return np.argmax(softmaxImp, axis=1)
         except Exception as e:
             print(str(e))
 
+    def softmax(self,matrix):
+        exp_matrix = np.exp(matrix - np.max(matrix, axis=1, keepdims=True))  
+        return exp_matrix / exp_matrix.sum(axis=1, keepdims=True)
 
     def ActivationFunctions(self,ID=0):
         activationFunctions ={
@@ -133,13 +135,9 @@ class ANNC():
             F_W[h] = tmp[w_skip-1]
         return W,F_W
 
-    def train(self):
-        self.forward_propagation(self.X_true, self.W, self.V)
-
-    def accuracy(self,y_true, y_pred):
-        y_pred_rounded = np.round(y_pred)
-        accuracy = np.mean(y_true == y_pred_rounded)
-        return accuracy
+    def mce(self,y_pred):
+        # y_pred_rounded = np.round(y_pred)
+        return  np.mean(self.Y_true == y_pred)
 
 # #if __name__ == "__main__":
 #     log = configrationLogger()

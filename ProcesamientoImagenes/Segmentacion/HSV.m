@@ -8,13 +8,18 @@ H = imagenHsv(:, :, 1);  % Matiz
 S = imagenHsv(:, :, 2);  % Saturación
 V = imagenHsv(:, :, 3);  % Valor
 
-%MedianFilter
-%imgMedianF = uint8(MedianFilter(S));
-imgMidPointF = uint8(MidpointFilter(S));
+%APlicamos filtro gauss
+kernel = double([1 4 7 4 1; 4 16 25 16 4; 7 26 41 26 7;4 16 26 16 4;1 4 7 4 1]) / 273;
+nneighbors = 2;
+imgGauss = convolucion2D(S,nneighbors,kernel);
 
-imgBinary = imbinarize(imgMidPointF);
-se = strel('disk', 5);
-imgDilatada = imdilate(imgBinary, se);
+%MedianFilter
+imgMedianF = MedianFilter(imgGauss);
+imgMidPointF = MidpointFilter(imgGauss);
+
+%imgBinary = imbinarize(V);
+%se = strel('disk', 5);
+%imgDilatada = imdilate(imgBinary, se);
 %imgDilatada = imclose(imgBinary, se);
 
 

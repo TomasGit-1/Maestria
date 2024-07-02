@@ -20,9 +20,8 @@ if __name__== "__main__":
     ns  =4
     PR= ParametrosRed(N,M,ns)
     population=PR.Poblacion()
-
     #inicio de la metahuristica
-       #Definimos entradas
+    #Definimos entradas
     #pr Es la probabilidad de cruza
     t ,beta, pr = 0, 1.4 ,0.4
     #Definimos el numero de generacionses
@@ -30,7 +29,7 @@ if __name__== "__main__":
 
     
     ObjEvolutionDFC = EvolutionDFC(
-       
+                                log = log,
                                 ns=ns, 
                                 problem=objective_function,
                                 beta = beta,
@@ -38,4 +37,6 @@ if __name__== "__main__":
                                 t = t,
                                 X_pop=population)
   
-    ObjEvolutionDFC.optimize(max_it=max_it,X=X, y=y)
+    X_optimize = ObjEvolutionDFC.optimize(max_it=max_it,X=X, y=y)
+    ObjEvolutionDFC.showVector(X_optimize)
+    

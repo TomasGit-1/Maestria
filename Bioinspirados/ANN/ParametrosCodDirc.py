@@ -1,8 +1,7 @@
 import numpy as np
 import math 
-from utils import configrationLogger, downloadDatasets
+from utils import  downloadDatasets
 import random 
-log = configrationLogger()
 
 
 class Individuo():

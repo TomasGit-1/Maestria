@@ -1,10 +1,7 @@
 
 import numpy as np
 from ANNC import ANNC
-from utils import configrationLogger, downloadDatasets
-log = configrationLogger()
-
-
+from utils import downloadDatasets
 class Individuo():
     def __init__(self, xInf=0, xSup=0, dim=0, numGenertion=0)-> None:
         self.vector = np.random.uniform(xInf, xSup, size = dim)
@@ -12,7 +9,8 @@ class Individuo():
         self.numGenertion = numGenertion
 
 class EvolutionDFC():
-    def __init__(self, xInf=None, xSup=None, dim_indi=None, ns=None,problem=None, beta=None, pr=None, t=None,X_pop =None):
+    def __init__(self,log, xInf=None, xSup=None, dim_indi=None, ns=None,problem=None, beta=None, pr=None, t=None,X_pop =None):
+        self.log = log
         self.xInf = xInf
         self.xSup = xSup
         self.dim_indi = dim_indi
@@ -58,25 +56,27 @@ class EvolutionDFC():
     
     def showVector(self, vector):
         for i in range(len(vector)):
-            print(f" {i} fitnees {vector[i].fitness} vector {vector[i].vector} ")
+            self.log.info(f" {i} fitnees {vector[i].fitness} vector {vector[i].vector} ")
+
+    def fitnees(self,objANNC):
+        #Calculamos el fitness
+        y_pred  = objANNC.forward_propagation()    
+        return objANNC.mce(y_pred)
         
     def optimize(self, max_it,X, y):
-
         errorGeneration = 10
         gen = 0
         X_ = np.copy(self.X_pop)
-        self.showVector(X_)
+        # self.showVector(X_)
         X_ = self.ordenar(X_)
         for _ in (range(max_it)):
-            print(10*"#")
-            print(f"Generacion {gen}")
-            self.showVector(X_)
+            # print(10*"#")
+            # print(f"Generacion {gen}")
+            # self.showVector(X_)
             for i in range(len(X_)):
                # X_[i].fitness = self.FObjective(X_[i].vector)
-                objANNC = ANNC(nameDataset="",X_true=X, Y_true=y,configNeurons=X_[i].vector,N=X_[i].N,M=X_[i].M,H=X_[i].H)
-                y_pred  = objANNC.forward_propagation()    
-                seleccion=objANNC.MCE(y_pred)
-                accurancy= objANNC.accuracy(y,seleccion)
+                objANNC = ANNC(log =  self.log, nameDataset="",X_true=X, Y_true=y,configNeurons=X_[i].vector,N=X_[i].N,M=X_[i].M,H=X_[i].H)
+                X_[i].fitness= self.fitnees(objANNC)
                 pop_temp = [ indi for idx, indi in enumerate(X_) if idx != i]
                 ui = self.Mutacion(X_[i], pop_temp)
                 x_hijo_vector = self.Cruza(ui, X_[i].vector)
@@ -86,7 +86,7 @@ class EvolutionDFC():
                     X_[i].fitness = x_hijo_fitness
             gen +=1
         X_ = self.ordenar(X_)
-        self.showVector(X_)
+        # self.showVector(X_)
         return X_
 
 def objective_function(vector):
