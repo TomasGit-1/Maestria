@@ -32,7 +32,8 @@ def downloadDatasets(log, key):
         "glass":42,
         "ionosphere":52,
         "irisplant":53,
-        "wine":109
+        "wine":109,
+        "BCW": 15
     }
     log.warning("Espera un momento estamos descargando")
     data = fetch_ucirepo(id = datasets[key]) 
@@ -49,5 +50,7 @@ def downloadDatasets(log, key):
         X =X.to_numpy()
     if isinstance(y, pd.DataFrame):
         y =np.array(y["classification"].tolist())
+
+
     return X, y
 
