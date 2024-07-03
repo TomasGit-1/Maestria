@@ -28,12 +28,12 @@ def configrationLogger():
 
 def downloadDatasets(log, key):  
     datasets = {
-        "balance":12,
-        "glass":42,
-        "ionosphere":52,
-        "irisplant":53,
-        "wine":109,
-        "BCW": 15
+        "balance":12,    #1 Tomy
+        "glass":42,      #2 Mirim
+        "ionosphere":52, #3 Miriam
+        "irisplant":53,  #4 Aide
+        "wine":109,      #5 Aide
+        "BCW": 15        #6 Tomy
     }
     log.warning("Espera un momento estamos descargando")
     data = fetch_ucirepo(id = datasets[key]) 
@@ -50,7 +50,5 @@ def downloadDatasets(log, key):
         X =X.to_numpy()
     if isinstance(y, pd.DataFrame):
         y =np.array(y["classification"].tolist())
-
-
     return X, y
 

@@ -28,10 +28,6 @@ class ANNC():
                 inp_h = np.dot(x_train, self.W.T)
                 out_h = np.zeros(inp_h.shape)
                 for i in range(len(self.F_W)):
-
-                    # if self.F_W[i] > 6 or self.F_W[i] < 0:
-                    #     self.F_W[i] = np.random.randint(0,6)
-
                     fx = self.ActivationFunctions(ID = int(self.F_W[i]))
                     Act = fx["fx"](inp_h.T[i])
                     out_h.T[i] = Act
@@ -43,10 +39,6 @@ class ANNC():
                 inp_out = np.dot(out_h_train, self.V.T)
                 out_s = np.zeros(inp_out.shape)
                 for i in range(len(self.F_V)):
-
-                    # if self.F_V[i] > 6 or self.F_V[i] < 0:
-                    #     self.F_V[i] = np.random.randint(0,6)
-
                     fx = self.ActivationFunctions(ID = int(self.F_V[i]))
                     Act = fx["fx"](inp_out.T[i])
                     out_s.T[i] = Act
@@ -58,16 +50,17 @@ class ANNC():
                 predict = np.argmax(softmaxImp, axis=1)
             except Exception as e:
                 self.log.error(f"Forward propagation Hidden layers failed {str(e)}")
-         
             return predict
         except Exception as e:
             print(str(e))
             return str(e)
 
-    def softmax(self,matrix):
+    def softmax(self,z):
         try:
-            exp_matrix = np.exp(matrix - np.max(matrix, axis=1, keepdims=True))  
-            return exp_matrix / exp_matrix.sum(axis=1, keepdims=True)
+            z -= np.max(z, axis=1, keepdims=True)
+            exp_z = np.exp(z)   
+            softmax_output = exp_z / np.sum(exp_z, axis=1, keepdims=True)
+            return softmax_output
         except Exception as e:
             self.log.error("Softmax genero una")
 
@@ -125,10 +118,7 @@ class ANNC():
 
     def mce(self,y_pred):
         try:
-            # tn, fp, fn, tp = confusion_matrix(self.Y_true.tolist(), y_pred.tolist()).ravel()
             acc = accuracy_score(self.Y_true, y_pred)
-            # print((tp+tn)/(tn+fn+fp+tp))
-            # return  np.mean(self.Y_true == y_pred)
             return acc
         except Exception as e:
             print(str(e))
