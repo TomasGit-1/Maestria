@@ -4,27 +4,63 @@ import pandas as pd
 import logging
 import numpy as np
 from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
 
-def configrationLogger():
+def plot_classification(X, y):
+    # Obtener clases únicas
+    classes = np.unique(y)
+    
+    # Definir colores para las clases
+    colors = plt.cm.rainbow(np.linspace(0, 1, len(classes)))
+    
+    # Graficar cada clase
+    plt.figure(figsize=(8, 6))
+    for i, class_label in enumerate(classes):
+        # Filtrar datos para esta clase
+        class_data = X[y == class_label]
+        plt.scatter(class_data[:, 0], class_data[:, 1], color=colors[i], label=f'Clase {int(class_label)}')
+    
+    # Configuración del gráfico
+    plt.title('Gráfico de Clasificación')
+    plt.xlabel('Feature 1')
+    plt.ylabel('Feature 2')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+    # Ejemplo de uso
+    X = np.array([[1, 2], [2, 3], [3, 4], [4, 5], [1, 3], [2, 4], [3, 5], [4, 6]])
+    y = np.array([0, 0, 0, 0, 1, 1, 1, 1])
+
+
+def configrationLogger(disable_logs = False):
     logger = logging.getLogger()
-    logger.setLevel(logging.INFO) 
-    formatter = ColoredFormatter(
-        "%(log_color)s%(levelname)-8s%(reset)s %(blue)s%(message)s",
-        datefmt=None,
-        reset=True,
-        log_colors={
-            'DEBUG':    'cyan',
-            'INFO':     'green',
-            'WARNING':  'yellow',
-            'ERROR':    'red',
-            'CRITICAL': 'red,bg_white',
-        },
-        secondary_log_colors={},
-        style='%'
-    )
-    console_handler = logging.StreamHandler()
-    console_handler.setFormatter(formatter)
-    logger.addHandler(console_handler)
+    if logger.hasHandlers():
+        logger.handlers.clear()    
+    if disable_logs:
+        logger.addHandler(logging.NullHandler())
+        logger.setLevel(logging.CRITICAL + 1)
+    else:
+        logger.setLevel(logging.INFO)
+        formatter = ColoredFormatter(
+            "%(log_color)s%(levelname)-8s%(reset)s %(blue)s%(message)s",
+            datefmt=None,
+            reset=True,
+            log_colors={
+                'DEBUG':    'cyan',
+                'INFO':     'green',
+                'WARNING':  'yellow',
+                'ERROR':    'red',
+                'CRITICAL': 'red,bg_white',
+            },
+            secondary_log_colors={},
+            style='%'
+        )
+        
+        console_handler = logging.StreamHandler()
+        console_handler.setFormatter(formatter)
+        logger.addHandler(console_handler)
+    
     return logger
 
 def downloadDatasets(log, key):  

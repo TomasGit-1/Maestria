@@ -2,16 +2,12 @@ import numpy as np
 from EvolutionD import EvolutionDFC
 from ANNC import ANNC
 from ParametrosRed import ParametrosRed
-from utils import configrationLogger, downloadDatasets
+from utils import configrationLogger, downloadDatasets, plot_classification
 
 
-log = configrationLogger()
-
-
+log = configrationLogger(disable_logs=True)
 
 if __name__== "__main__":
-
-
     #inicializacion de la población
     X_train, X_test, y_train, y_test = downloadDatasets(log, "balance")
     N=X_train.shape[1]
@@ -24,7 +20,8 @@ if __name__== "__main__":
     #inicio de la metahuristica
     #Definimos entradas
     #pr Es la probabil5idad de cruza
-    t ,beta, pr = 0, 1.4 ,0.4
+    #T no se ocupa
+    t ,beta, pr = 0, 0.8 ,0.9
     #Definimos el numero de generacionses
     max_it = 1000
 
@@ -43,4 +40,5 @@ if __name__== "__main__":
     red.Data(configNeurons= X_optimize[0].vector,N=X_optimize[0].N,M=X_optimize[0].M,H=X_optimize[0].H)
     y_test_predict=red.forward_propagation()
     exactitud=red.mce(y_test_predict)
-    log.info(f"{exactitud}")
+    log.info(f"{exactitud} vector : {y_test_predict}")
+    plot_classification(X_test,y_test)

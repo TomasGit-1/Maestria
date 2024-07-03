@@ -97,10 +97,10 @@ class EvolutionDFC():
             tmp2[0]= self.condiciones(sup=(2**H)-1,numero=tmp2[0])
             tmp2[-1]= self.condiciones(sup=6,numero=tmp2[-1])
             X_Output[m * v_skip : (m * v_skip + v_skip)]=tmp2
-        print("Vector1",vector)
+        self.log.info("Vector1",vector)
         vector[0:w_skip*N]=X_hidden
         vector[w_skip*H:]=X_Output
-        print("Vec2",vector)
+        self.log.info("Vec2",vector)
         return vector
 
     def condiciones(self,sup,numero):
@@ -129,7 +129,7 @@ class EvolutionDFC():
                 else:
                     self.log.info(f"Son diferentes Fitness {gen} : padre {X_[i].fitness} hijo {x_hijo_fitness}")
                     x_hijo_fitness= self.fitness(configNeurons=x_hijo_vector,N=X_[i].N,M=X_[i].M,H=X_[i].H)
-                    if x_hijo_fitness < X_[i].fitness:
+                    if x_hijo_fitness > X_[i].fitness:
                         X_[i].vector = x_hijo_vector
                         X_[i].fitness = x_hijo_fitness
 

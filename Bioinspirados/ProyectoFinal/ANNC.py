@@ -52,8 +52,7 @@ class ANNC():
                 self.log.error(f"Forward propagation Hidden layers failed {str(e)}")
             return predict
         except Exception as e:
-            print(str(e))
-            return str(e)
+            return None
 
     def softmax(self,z):
         try:
@@ -95,6 +94,7 @@ class ANNC():
             V,F_V = self.configuration(M, X_Output, w_skip, V, F_V, H)
             return W,F_W,V,F_V
         except Exception as e:
+            return None,None,None, None
             print(str(e))
     
     def configuration(self,layers, x, w_skip, W, F_W, N):
