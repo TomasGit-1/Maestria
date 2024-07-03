@@ -3,12 +3,14 @@ from EvolutionD import EvolutionDFC
 from ANNC import ANNC
 from ParametrosRed import ParametrosRed
 from utils import configrationLogger, downloadDatasets
+
+
 log = configrationLogger()
 
 
 if __name__== "__main__":
     #inicializacion de la población
-    X, y = downloadDatasets(log, "balance")
+    X, y = downloadDatasets(log, "glass")
     N=X.shape[1]
     valores, conteos = np.unique(y, return_counts=True)
     M = valores.shape[0]
@@ -21,7 +23,7 @@ if __name__== "__main__":
     #pr Es la probabilidad de cruza
     t ,beta, pr = 0, 1.4 ,0.4
     #Definimos el numero de generacionses
-    max_it = 1000
+    max_it = 10
 
     ObjEvolutionDFC = EvolutionDFC(
                                 log = log,

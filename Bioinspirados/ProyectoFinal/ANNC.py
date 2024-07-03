@@ -29,8 +29,8 @@ class ANNC():
                 out_h = np.zeros(inp_h.shape)
                 for i in range(len(self.F_W)):
 
-                    if self.F_W[i] > 6 or self.F_W[i] < 0:
-                        self.F_W[i] = np.random.randint(0,6)
+                    # if self.F_W[i] > 6 or self.F_W[i] < 0:
+                    #     self.F_W[i] = np.random.randint(0,6)
 
                     fx = self.ActivationFunctions(ID = int(self.F_W[i]))
                     Act = fx["fx"](inp_h.T[i])
@@ -44,8 +44,8 @@ class ANNC():
                 out_s = np.zeros(inp_out.shape)
                 for i in range(len(self.F_V)):
 
-                    if self.F_V[i] > 6 or self.F_V[i] < 0:
-                        self.F_V[i] = np.random.randint(0,6)
+                    # if self.F_V[i] > 6 or self.F_V[i] < 0:
+                    #     self.F_V[i] = np.random.randint(0,6)
 
                     fx = self.ActivationFunctions(ID = int(self.F_V[i]))
                     Act = fx["fx"](inp_out.T[i])

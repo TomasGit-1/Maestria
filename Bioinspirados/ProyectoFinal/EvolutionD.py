@@ -72,6 +72,42 @@ class EvolutionDFC():
             return self.objANNC.mce(y_pred)
         except Exception as e:
             print(str(e))
+
+    def validacionDatos(self,configNeurons= None,N=None,M=None,H=None):
+        """Paso1: Realizar el split de las capas de ocultas y de
+        las capas de salida.
+        Paso2: Agarrar subvectores N+3, dende la primera posicion es T
+        y N+3 es la funcion.
+        """
+        vector=configNeurons
+        N=N
+        M=M
+        H=H
+        w_skip = N + 3
+        v_skip = H + 3
+        X_hidden = vector[0:w_skip*N]
+        X_Output = vector[w_skip*H:]
+        for h in range(H):
+            tmp =X_hidden[h * w_skip : (h * w_skip + w_skip)]
+            tmp[0]= self.condiciones(sup=(2**N)-1,numero=tmp[0])
+            tmp[-1]= self.condiciones(sup=6,numero=tmp[-1])
+            X_hidden[h * w_skip : (h * w_skip + w_skip)]=tmp
+        for m in range(M):
+            tmp2 =X_Output[m * v_skip : (m * v_skip + v_skip)]
+            tmp2[0]= self.condiciones(sup=(2**H)-1,numero=tmp2[0])
+            tmp2[-1]= self.condiciones(sup=6,numero=tmp2[-1])
+            X_Output[m * v_skip : (m * v_skip + v_skip)]=tmp2
+        print("Vector1",vector)
+        vector[0:w_skip*N]=X_hidden
+        vector[w_skip*H:]=X_Output
+        print("Vec2",vector)
+        return vector
+
+    def condiciones(self,sup,numero):
+        numero=abs(numero)
+        if numero>sup:
+            return sup
+        return numero
         
     def optimize(self, max_it,X, y):
         gen = 0
@@ -79,11 +115,13 @@ class EvolutionDFC():
         X_ = np.copy(self.X_pop)
         X_ = self.ordenar(X_)
         for _ in (range(max_it)):
-            for i in range(len(X_)):                
+            for i in range(len(X_)): 
+                X_[i].vector=self.validacionDatos(configNeurons=X_[i].vector,N=X_[i].N,M=X_[i].M,H=X_[i].H)              
                 X_[i].fitness= self.fitness(configNeurons=X_[i].vector,N=X_[i].N,M=X_[i].M,H=X_[i].H)
                 pop_temp = [ indi for idx, indi in enumerate(X_) if idx != i]
                 ui = self.Mutacion(X_[i], pop_temp)
                 x_hijo_vector = self.CruzaBinomial(ui, X_[i].vector)
+                x_hijo_vector=self.validacionDatos(configNeurons=x_hijo_vector,N=X_[i].N,M=X_[i].M,H=X_[i].H)
                 x_hijo_fitness = None
                 son_iguales = np.array_equal(X_[i].vector, x_hijo_vector)
                 if son_iguales:
