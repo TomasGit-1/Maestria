@@ -45,6 +45,18 @@ class EvolutionDFC():
                 break
         return np.array([U[j] if U[j] in J else x_actual[j] for j in range(len(U))])
     
+    def CruzaBinomial(self, U,x_actual):
+        j_ = np.random.randint(len(U))
+        J = []
+        J.append(j_)
+        nx = len(U)-1
+        for j in range(1, nx):
+            U01 = np.random.rand()
+            if U01< self.pr and j != j_:
+                J.append(j)
+        descendiente = np.array([U[j] if U[j] in J else x_actual[j] for j in range(len(U))])
+        return descendiente
+    
     def ordenar(self, vector):
         return  sorted(vector, key= lambda x: x.fitness)
     
@@ -52,11 +64,14 @@ class EvolutionDFC():
         for i in range(len(vector)):
             self.log.info(f" {i} fitnees {vector[i].fitness} vector {vector[i].vector} ")
 
-    def fitnees(self, configNeurons= None,N=None,M=None,H=None):
-        #Calculamos el fitness
-        self.objANNC.Data(configNeurons=configNeurons,N=N,M=M,H=H)
-        y_pred  = self.objANNC.forward_propagation()    
-        return self.objANNC.mce(y_pred)
+    def fitness(self, configNeurons= None,N=None,M=None,H=None):
+        try:
+            #Calculamos el fitness
+            self.objANNC.Data(configNeurons=configNeurons,N=N,M=M,H=H)
+            y_pred  = self.objANNC.forward_propagation()    
+            return self.objANNC.mce(y_pred)
+        except Exception as e:
+            print(str(e))
         
     def optimize(self, max_it,X, y):
         gen = 0
@@ -65,24 +80,23 @@ class EvolutionDFC():
         X_ = self.ordenar(X_)
         for _ in (range(max_it)):
             for i in range(len(X_)):                
-                X_[i].fitness= self.fitnees(configNeurons=X_[i].vector,N=X_[i].N,M=X_[i].M,H=X_[i].H)
+                X_[i].fitness= self.fitness(configNeurons=X_[i].vector,N=X_[i].N,M=X_[i].M,H=X_[i].H)
                 pop_temp = [ indi for idx, indi in enumerate(X_) if idx != i]
                 ui = self.Mutacion(X_[i], pop_temp)
-                x_hijo_vector = self.Cruza(ui, X_[i].vector)
-                x_hijo_fitness= self.fitnees(configNeurons=x_hijo_vector,N=X_[i].N,M=X_[i].M,H=X_[i].H)
+                x_hijo_vector = self.CruzaBinomial(ui, X_[i].vector)
+                x_hijo_fitness = None
                 son_iguales = np.array_equal(X_[i].vector, x_hijo_vector)
-                
                 if son_iguales:
                     self.log.error("Padre e hijos iguales")
                 else:
-                    self.log.info(f"Fitness {gen} : padre {X_[i].fitness} hijo {x_hijo_fitness}")
-                    
-                if x_hijo_fitness < X_[i].fitness:
-                    X_[i].vector = x_hijo_vector
-                    X_[i].fitness = x_hijo_fitness
+                    self.log.info(f"Son diferentes Fitness {gen} : padre {X_[i].fitness} hijo {x_hijo_fitness}")
+                    x_hijo_fitness= self.fitness(configNeurons=x_hijo_vector,N=X_[i].N,M=X_[i].M,H=X_[i].H)
+                    if x_hijo_fitness < X_[i].fitness:
+                        X_[i].vector = x_hijo_vector
+                        X_[i].fitness = x_hijo_fitness
+
             gen +=1
         X_ = self.ordenar(X_)
         return X_
-
 
 

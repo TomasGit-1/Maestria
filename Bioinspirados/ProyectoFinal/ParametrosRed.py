@@ -20,7 +20,7 @@ class ParametrosRed():
         self.T=2**(self.N)
         funcion_act= random.randint(0,6)
         Tr= random.randint(0,self.T-1)
-        vector_linspace = np.random.uniform(-10,10,size)
+        vector_linspace = np.random.uniform(-10,10,size,)
         bias= np.random.rand()
         return np.concatenate(([Tr], vector_linspace,[bias], [funcion_act]))
 

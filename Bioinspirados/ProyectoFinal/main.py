@@ -13,17 +13,16 @@ if __name__== "__main__":
     valores, conteos = np.unique(y, return_counts=True)
     M = valores.shape[0]
     #Es el tamanio de la poblacion
-    ns  =4
+    ns  = 100
     PR= ParametrosRed(N,M,ns)
     population=PR.Poblacion()
     #inicio de la metahuristica
     #Definimos entradas
     #pr Es la probabilidad de cruza
-    t ,beta, pr = 0, 1.4 ,0.9
+    t ,beta, pr = 0, 1.4 ,0.4
     #Definimos el numero de generacionses
-    max_it = 100
+    max_it = 1000
 
-    
     ObjEvolutionDFC = EvolutionDFC(
                                 log = log,
                                 ns=ns, 
@@ -33,5 +32,5 @@ if __name__== "__main__":
                                 X_pop=population)
   
     X_optimize = ObjEvolutionDFC.optimize(max_it=max_it,X=X, y=y)
-    # ObjEvolutionDFC.showVector(X_optimize)
+    ObjEvolutionDFC.showVector(X_optimize)
     
