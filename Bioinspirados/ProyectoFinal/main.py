@@ -2,14 +2,14 @@ import numpy as np
 from EvolutionD import EvolutionDFC
 from ANNC import ANNC
 from ParametrosRed import ParametrosRed
-from utils import configrationLogger, downloadDatasets, plot_classification
+from utils import configrationLogger, downloadDatasets, plot_confusion_matrix
 
 
 log = configrationLogger(disable_logs=True)
 
 if __name__== "__main__":
     #inicializacion de la población
-    X_train, X_test, y_train, y_test = downloadDatasets(log, "balance")
+    X_train, X_test, y_train, y_test = downloadDatasets(log, "BCW")
     N=X_train.shape[1]
     valores, conteos = np.unique(y_train, return_counts=True)
     M = valores.shape[0]
@@ -23,8 +23,7 @@ if __name__== "__main__":
     #T no se ocupa
     t ,beta, pr = 0, 0.8 ,0.9
     #Definimos el numero de generacionses
-    max_it = 1000
-
+    max_it = 100
     ObjEvolutionDFC = EvolutionDFC(
                                 log = log,
                                 ns=ns, 
@@ -41,4 +40,5 @@ if __name__== "__main__":
     y_test_predict=red.forward_propagation()
     exactitud=red.mce(y_test_predict)
     log.info(f"{exactitud} vector : {y_test_predict}")
-    plot_classification(X_test,y_test)
+    plot_confusion_matrix(y_test,y_test_predict,exactitud)
+

@@ -5,33 +5,38 @@ import logging
 import numpy as np
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
+import uuid
+import os
+import seaborn as sns
+from sklearn.metrics import confusion_matrix,accuracy_score
 
-def plot_classification(X, y):
-    # Obtener clases únicas
-    classes = np.unique(y)
-    
-    # Definir colores para las clases
-    colors = plt.cm.rainbow(np.linspace(0, 1, len(classes)))
-    
-    # Graficar cada clase
+def plot_confusion_matrix(Y_true, y_pred,exactitud):
+    conf_matrix = confusion_matrix(Y_true, y_pred)
+    classes = np.unique(Y_true)
+
     plt.figure(figsize=(8, 6))
-    for i, class_label in enumerate(classes):
-        # Filtrar datos para esta clase
-        class_data = X[y == class_label]
-        plt.scatter(class_data[:, 0], class_data[:, 1], color=colors[i], label=f'Clase {int(class_label)}')
-    
-    # Configuración del gráfico
-    plt.title('Gráfico de Clasificación')
-    plt.xlabel('Feature 1')
-    plt.ylabel('Feature 2')
-    plt.legend()
-    plt.grid(True)
+    sns.set(font_scale=1.2)
+    sns.heatmap(conf_matrix, annot=True, cmap='Blues', fmt='g', cbar=False,
+                xticklabels=classes, yticklabels=classes)
+    plt.xlabel('Etiquetas Predichas')
+    plt.ylabel('Etiquetas Verdaderas')
+    plt.title('Matriz de Confusión\nExactitud: {:.2f}'.format(exactitud))
+    random_filename = str(uuid.uuid4())
+    plt.savefig(f"figures/Matriz_predicciones_{random_filename}.png")
     plt.show()
 
-    # Ejemplo de uso
-    X = np.array([[1, 2], [2, 3], [3, 4], [4, 5], [1, 3], [2, 4], [3, 5], [4, 6]])
-    y = np.array([0, 0, 0, 0, 1, 1, 1, 1])
+    # Fila 1: Representa la clase 0.
+    # 33 muestras fueron clasificadas correctamente como clase 0 (True Negatives - TN).
+    # No hubo muestras clasificadas incorrectamente como clase 1 o clase 2 (False Positives - FP).
 
+    # Fila 2: Representa la clase 1.
+    # 11 muestra fue clasificada correctamente como clase 1 (True Positives - TP).
+    # 22 muestras fueron clasificadas incorrectamente como clase 2 (False Negatives - FN).
+
+    # Fila 3: Representa la clase 2.
+    # 11 muestra fue clasificada correctamente como clase 2 (TP).
+    # 22 muestras fueron clasificadas incorrectamente como clase 1 (FN).
 
 def configrationLogger(disable_logs = False):
     logger = logging.getLogger()
@@ -62,34 +67,6 @@ def configrationLogger(disable_logs = False):
         logger.addHandler(console_handler)
     
     return logger
-
-def downloadDatasets(log, key):  
-    datasets = {
-        "balance":12,
-        "glass":42,
-        "ionosphere":52,
-        "irisplant":53,
-        "wine":109,
-        "BCW": 15
-    }
-    log.warning("Espera un momento estamos descargando")
-    data = fetch_ucirepo(id = datasets[key]) 
-    X = data.data.features 
-    y = data.data.targets 
-    columClass = y.columns.tolist()
-    if y[columClass[0]].dtype == 'object':
-        y["classification"] = pd.Categorical(y[columClass[0]])
-        y["classification"] = y["classification"].cat.codes
-    else:
-        y['classification'] = y[columClass[0]]
-    log.warning("Terminamos la descargar")
-    if isinstance(X, pd.DataFrame):
-        X =X.to_numpy()
-    if isinstance(y, pd.DataFrame):
-        y =np.array(y["classification"].tolist())
-
-
-    return X, y
 
 def downloadDatasets(log, key):  
     datasets = {
