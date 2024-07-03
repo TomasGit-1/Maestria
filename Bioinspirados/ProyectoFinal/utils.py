@@ -3,6 +3,7 @@ from ucimlrepo import fetch_ucirepo
 import pandas as pd
 import logging
 import numpy as np
+from sklearn.model_selection import train_test_split
 
 def configrationLogger():
     logger = logging.getLogger()
@@ -28,12 +29,12 @@ def configrationLogger():
 
 def downloadDatasets(log, key):  
     datasets = {
-        "balance":12,    #1 Tomy
-        "glass":42,      #2 Mirim
-        "ionosphere":52, #3 Miriam
-        "irisplant":53,  #4 Aide
-        "wine":109,      #5 Aide
-        "BCW": 15        #6 Tomy
+        "balance":12,
+        "glass":42,
+        "ionosphere":52,
+        "irisplant":53,
+        "wine":109,
+        "BCW": 15
     }
     log.warning("Espera un momento estamos descargando")
     data = fetch_ucirepo(id = datasets[key]) 
@@ -50,5 +51,33 @@ def downloadDatasets(log, key):
         X =X.to_numpy()
     if isinstance(y, pd.DataFrame):
         y =np.array(y["classification"].tolist())
+
+
     return X, y
 
+def downloadDatasets(log, key):  
+    datasets = {
+        "balance":12,
+        "glass":42,
+        "ionosphere":52,
+        "irisplant":53,
+        "wine":109,
+        "BCW": 15  
+    }
+    log.warning("Espera un momento estamos descargando")
+    data = fetch_ucirepo(id = datasets[key]) 
+    X = data.data.features 
+    y = data.data.targets 
+    columClass = y.columns.tolist()
+    if y[columClass[0]].dtype == 'object':
+        y["classification"] = pd.Categorical(y[columClass[0]])
+        y["classification"] = y["classification"].cat.codes
+    else:
+        y['classification'] = y[columClass[0]]
+    log.warning("Terminamos la descargar")
+    if isinstance(X, pd.DataFrame):
+        X =X.to_numpy()
+    if isinstance(y, pd.DataFrame):
+        y =np.array(y["classification"].tolist())
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=42,stratify=y)
+    return X_train, X_test, y_train, y_test
