@@ -11,7 +11,7 @@ import os
 import seaborn as sns
 from sklearn.metrics import confusion_matrix,accuracy_score
 
-def plot_confusion_matrix(Y_true, y_pred,exactitud):
+def plot_confusion_matrix(Y_true, y_pred,exactitud,name):
     conf_matrix = confusion_matrix(Y_true, y_pred)
     classes = np.unique(Y_true)
 
@@ -23,7 +23,7 @@ def plot_confusion_matrix(Y_true, y_pred,exactitud):
     plt.ylabel('Etiquetas Verdaderas')
     plt.title('Matriz de Confusión\nExactitud: {:.2f}'.format(exactitud))
     random_filename = str(uuid.uuid4())
-    plt.savefig(f"figures/Matriz_predicciones_{random_filename}.png")
+    plt.savefig(f"figures/Matriz_{name}_predicciones_{random_filename}.png")
     plt.show()
 
     # Fila 1: Representa la clase 0.

@@ -23,7 +23,7 @@ if __name__== "__main__":
     #T no se ocupa
     t ,beta, pr = 0, 0.8 ,0.9
     #Definimos el numero de generacionses
-    max_it = 100
+    max_it = 1000
     ObjEvolutionDFC = EvolutionDFC(
                                 log = log,
                                 ns=ns, 
@@ -40,5 +40,5 @@ if __name__== "__main__":
     y_test_predict=red.forward_propagation()
     exactitud=red.mce(y_test_predict)
     log.info(f"{exactitud} vector : {y_test_predict}")
-    plot_confusion_matrix(y_test,y_test_predict,exactitud)
+    plot_confusion_matrix(y_test,y_test_predict,exactitud,"balance")
 

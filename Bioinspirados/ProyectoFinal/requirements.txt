@@ -1,0 +1,7 @@
+numpy
+colorlog
+pandas
+ucimlrepo
+seaborn
+scikit-learn
+matplotlib

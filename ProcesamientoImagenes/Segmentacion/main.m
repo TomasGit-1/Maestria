@@ -1,30 +1,54 @@
-img = imread("imagenes proyecto\ISIC_0024306.jpg");
-canalRojo = img(:, :, 1);
-grayImage = rgb2gray(img);
-
+img = imread("imagenes proyecto\ISIC_0024310.jpg");
 
 if size(img, 3) == 3
     img = rgb2gray(img);
 end
+imgInver = imcomplement(img);
 
-% Crear un elemento estructurante
+img = imgaussfilt(img, 2);
 se = strel('disk', 5);
+imgBinary = imbinarize(img);
+imgDilatada = imdilate(imgBinary, se);
+imgDilatada = imdilate(imgDilatada, se);
+imgDilatada = imdilate(imgDilatada, se);
+cc = bwconncomp(imgDilatada);
+props = regionprops(cc, 'Area', 'BoundingBox', 'Centroid');
 
-imgDilatada = imdilate(img, se);
-imgErosionada = imerode(img, se);
+% Encontrar el índice de la región con el área más grande
+[max_area, idx] = max([props.Area]);
 
-bordes = edge(img, 'Canny');
+% Obtener la información de la región más grande
+area_mas_grande = props(idx).Area;
+bounding_box_mas_grande = props(idx).BoundingBox;
+centroid_mas_grande = props(idx).Centroid;
 
-%Sobel
-Hsx = [-1 0 1; -2 0 2; -1 0 1];
-Hsy = [-1 -2 -1; 0 0 0; 1 2 1];
-% 1 es 3x3
-% 2 es 5x5
-nneighbors = 1;
-derivateX = convolucion2D(imgDilatada,nneighbors,Hsx);
-derivateX = abs(derivateX);
-derivateY = convolucion2D(imgDilatada,nneighbors,Hsy);
-derivateY = abs(derivateY);
+% Mostrar la información
+disp(['Área más grande: ', num2str(area_mas_grande)]);
+disp(['BoundingBox de la región más grande: ', mat2str(bounding_box_mas_grande)]);
+disp(['Centroid de la región más grande: ', mat2str(centroid_mas_grande)]);
 
-gradient_magnitude = sqrt( derivateX .^ 2 + derivateY .^ 2);
-gradient_magnitude = (gradient_magnitude * 255) /max(max(gradient_magnitude));
+
+% Crear una máscara para la región más grande
+mascara_region_mas_grande = false(size(imgBinary));
+mascara_region_mas_grande(cc.PixelIdxList{idx}) = true;
+
+% Superponer la máscara en la imagen original
+imagen_resaltada = img; % Si img es en escala de grises
+imagen_resaltada_color = cat(3, img, img, img); % Convertir a RGB si es necesario
+
+% Resaltar la región más grande en rojo
+imagen_resaltada_color(repmat(mascara_region_mas_grande, [1, 1, 3])) = 255;
+
+% Mostrar la imagen original y la resaltada
+figure;
+subplot(1, 2, 1);
+imshow(img);
+title('Imagen Original en Escala de Grises');
+
+subplot(1, 2, 2);
+imshow(imagen_resaltada_color);
+title('Región Más Grande Resaltada');
+hold on;
+rectangle('Position', bounding_box_mas_grande, 'EdgeColor', 'r', 'LineWidth', 2);
+plot(centroid_mas_grande(1), centroid_mas_grande(2), 'b*', 'MarkerSize', 10);
+hold off;
