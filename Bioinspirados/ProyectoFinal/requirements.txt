@@ -5,3 +5,4 @@ ucimlrepo
 seaborn
 scikit-learn
 matplotlib
+anytree

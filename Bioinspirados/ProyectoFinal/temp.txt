@@ -1,0 +1,107 @@
+"""
+    "network":[["hiddenNeurons"], ["outputNeurons"]],
+    <hiddenNeurons> |= <hiddenNeuron> | <hiddenNeruon>_<hiddenNeruons>
+    <hiddenNeruon> |= <func> : <weight> @i0, <inputs>#<outputs>
+    <func> |= LS | HT | SN | GS | LN | HL | LR
+    <weight> |= <sign> <digitList>.<digitList>
+    <inputs> |= <input> | <input> , <inputs>
+    <outputs> |= <output> | <output>, <outputs>
+    <sing> |= + | -
+    <digitList> |= <digit> | <digit> <digitList>
+    <digit> |= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+"""
+
+
+
+"""
+    <network> |= [<hiddenNeurons>][<outputNeurons>]
+    <hiddenNeurons> |= <hiddenNeuron> | <hiddenNeruon>_<hiddenNeruons>
+    <hiddenNeruon> |= <func> : <weight> @i0, <inputs>#<outputs>
+    <outputNeurons> |= <func>: <weight> @i0_.._<func>:<weight>@i0)
+    <func> |= LS | HT | SN | GS | LN | HL | LR
+    <inputs> |= <input> | <input> , <inputs>
+    <outputs> |= <output> | <output>, <outputs>
+    <input> |= <weight> @ <inputID>
+    <output> |= <weight> @ <outputID>
+    <inputID> |= i1 | .. | iN
+    <outputID> |= o1 |.. | oM
+    <weight> |= <sign> <digitList>.<digitList>
+    <sing> |= + | -
+    <digitList> |= <digit> | <digit> <digitList>
+    <digit> |= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+"""
+struct={
+    "network":[["hiddenNeurons"], ["outputNeurons"]],
+    "hiddenNeurons":[["hiddenNeuron"], ["hiddenNeurons"]],
+    # "hiddenNeurons":[["hiddenNeuron"], ["hiddenNeuron_hiddenNeurons"]],
+    "hiddenNeuron":["func weight @i0" ,"inputs#outputs"],
+    "outputNeurons":["<func>: <weight> @i0_.._<func>:<weight>@i0)"],
+    "func":[["LS"], ["HT"],["SN"],["GS"],["LN"],["HL"],["LR"]],
+    "inputs":[["input"], ["input,inputs"]],
+    "outputs":[["output"], ["output,outputs"]],
+    "input":[["weight @ inputID"]],
+    "output":[["weight @ outputID"]],
+    "inputID":[["i1 | .. | iN"]],
+    "outputID":[["o1 |.. | oM"]],
+    "weight":[["sign digitList.digitList"]],
+    "sing":[["+"], ["-"]],
+    "digitList":[["digit"], ["digit digitList"]],
+    "digit":[["0"],["1"],["2"],["3"],["4"],["5"],["6"],["7"],["8"],["9"]],
+}  
+hojas=["0","1","2","3","4","5","6","7","8","9", "+","-"] 
+nodos=["hiddenNeurons","hiddenNeuron"]
+
+#Creamos la raiz de nuestro arbol para los Hiiden layes
+keyTemp = "hiddenNeurons"
+raiz = TreeNode(keyTemp)
+actual = raiz
+for i in range(len(chromosome)):
+        #Obtenemos el modulo
+        mod = chromosome[i] %2
+        nivelOpciones = struct[keyTemp]
+        newChild = nivelOpciones[mod]
+        keyTemp = newChild[0]
+        #Insertamos el nodo actual
+        nodoTemp = TreeNode(newChild[0])
+        actual.add_child(nodoTemp)
+        restante = newChild[1:]
+        if len(restante)>0:
+            for j in range(len(restante)):
+                nodo = TreeNode(restante[j])
+                actual.add_child(nodo)
+        print(f"Arbol  actual cromosama {i} de {len(chromosome)}")
+        print(raiz)
+        if nodoTemp.data in hojas:
+            #regresamos al sigueinte nodo libre
+            while True:
+                keyTemp = nodoTemp.data
+                temp = nodoTemp.parent
+                if nodoTemp.parent !=None:
+                    if temp.data in nodos and len(temp.children)>1:
+                        print("Moiendo a otro nodo")
+                        index =  [i for i, child in enumerate(temp.children) if len(child.children) == 0 ]
+                        if len(index)>0:
+                            temp = temp.get_child(index[0])
+                            keyTemp = temp.data
+                            nodoTemp = temp
+                            break
+                        else:
+                            print("No se encontro vacios no movemos un niovel ams")
+                else:
+                    nodoTemp = raiz  
+                    break
+                nodoTemp = temp
+        keyTemp = nodoTemp.data
+        actual = nodoTemp
+result = inorder_traversal(raiz)
+print("\nRecorrido inorder:")
+print(result)
+
+
+
+
+
+
+
+
+
