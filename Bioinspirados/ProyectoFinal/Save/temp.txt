@@ -17,7 +17,7 @@
     <network> |= [<hiddenNeurons>][<outputNeurons>]
     <hiddenNeurons> |= <hiddenNeuron> | <hiddenNeruon>_<hiddenNeruons>
     <hiddenNeruon> |= <func> : <weight> @i0, <inputs>#<outputs>
-    <outputNeurons> |= <func>: <weight> @i0_.._<func>:<weight>@i0)
+    <outputNeurons> |= <func>: <weight> @i0_.._<func>:<weight>@i0
     <func> |= LS | HT | SN | GS | LN | HL | LR
     <inputs> |= <input> | <input> , <inputs>
     <outputs> |= <output> | <output>, <outputs>

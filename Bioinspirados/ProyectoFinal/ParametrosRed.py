@@ -33,3 +33,9 @@ class ParametrosRed():
             x = x_hidden.tolist() + x_output.tolist()
             Population.append(Individuo(np.array(x),0,self.N,self.M,self.H))
         return Population
+
+    def Poblaciongenotipo(self,min_value, max_value, size_genotipo):        
+        Population= []
+        for i in range(self.Pob_size):
+            Population.append(Individuo(np.random.randint(low=min_value, high=max_value, size=size_genotipo),0,self.N,self.M,self.H))
+        return Population
