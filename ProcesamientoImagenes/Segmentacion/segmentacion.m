@@ -1,14 +1,12 @@
-img = imread("imagenes proyecto\ISIC_0024307.jpg");
-if size(img, 3) == 3
-    img = rgb2gray(img);
+function mascara_region_mas_grande = segmentacion(img)
+    imgInver = imcomplement(img);
+    imgBinary = imbinarize(imgInver);
+    se = strel('disk', 5);
+    imgDilatada = imdilate(imgBinary, se);
+
+    cc = bwconncomp(imgDilatada);
+    props = regionprops(cc, 'Area', 'BoundingBox', 'Centroid');
+    [max_area, idx] = max([props.Area]);
+    mascara_region_mas_grande = false(size(imgDilatada));
+    mascara_region_mas_grande(cc.PixelIdxList{idx}) = true;
 end
-img = imgaussfilt(img, 2);
-imgInver = imcomplement(img);
-
-se = strel('disk', 3);
-imgBinary = imbinarize(imgInver);
-imgDilatada = imdilate(imgBinary, se);
-imgDilatada = imdilate(imgDilatada, se);
-
-cc = bwconncomp(imgDilatada);
-props = regionprops(cc, 'Area', 'BoundingBox', 'Centroid');
