@@ -1,5 +1,5 @@
-imgSegmentada = imread('Resultados/Result1_ISIC_0024306.jpg');
-objectivo = imread("Resultados/ISIC_0024306_segmentation.png");
+imgSegmentada = imread('Resultados/ISIC_0024308_Result_segmentacion.png');
+objectivo = imread("Resultados/ISIC_0024308_segmentation.png");
 
 % Convertir a escala de grises si es necesario
 if size(imgSegmentada, 3) == 3

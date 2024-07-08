@@ -1,0 +1,97 @@
+function mascara_region_mas_grande = segmentacion(img)
+    img imtophat(original,se);
+    img = imgaussfilt(img, 2);
+    imgInver = imcomplement(img);
+    imgBinary = imbinarize(imgInver);
+    se = strel('disk', 5);  
+    %morphology = imdilate(imgBinary, se);
+    morphology = imfill(imgBinary,'holes');
+    %$morphology = imdilate(imgBinary, se);
+    %morphology = bwskel(imgBinary);
+
+    cc = bwconncomp(morphology);
+    props = regionprops(cc, 'Area', 'BoundingBox', 'Centroid');
+    [max_area, idx] = max([props.Area]);
+    mascara_region_mas_grande = false(size(morphology));
+    mascara_region_mas_grande(cc.PixelIdxList{idx}) = true;
+ 
+end
+
+
+%{
+    % Detectar contornos en la imagen binarizada
+    boundaries = bwboundaries(imgBinary);
+    % Mostrar la imagen original con los contornos superpuestos
+    imshow(imgBinary);
+    hold on;
+    % Dibujar los contornos detectados
+    for k = 1:length(boundaries)
+        boundary = boundaries{k};
+        plot(boundary(:,2), boundary(:,1), 'r', 'LineWidth', 2);
+    end
+    % Opcional: mostrar el rectángulo delimitador y centroide de la región más grande como antes
+    props = regionprops(imgBinary, 'BoundingBox', 'Centroid');
+    boundingBox = props.BoundingBox;
+    centroid = props.Centroid;
+    rectangle('Position', boundingBox, 'EdgeColor', 'g', 'LineWidth', 2);
+    plot(centroid(1), centroid(2), 'g+', 'MarkerSize', 10, 'LineWidth', 2)
+%}
+%{
+% Mostrar la imagen original con el área más grande resaltada
+imshow(img); hold on;
+boundary = bwboundaries(mascara_region_mas_grande);
+for k = 1:length(boundary)
+    plot(boundary{k}(:,2), boundary{k}(:,1), 'r', 'LineWidth', 2);
+end
+title('Área más grande resaltada');
+
+
+
+
+
+
+
+
+
+imgInver = imcomplement(img);
+    imgBinary = imbinarize(imgInver);
+    cc = bwconncomp(imgBinary);
+    props = regionprops(cc, 'Area', 'BoundingBox', 'Centroid');
+    [max_area, idx] = max([props.Area]);
+    mascara_region_mas_grande = false(size(imgBinary));
+    mascara_region_mas_grande(cc.PixelIdxList{idx}) = true;
+
+    % Mostrar la imagen original
+    imshow(imgBinary); hold on;
+    
+    % Obtener el rectángulo delimitador y centroide de la región más grande
+    props = regionprops(mascara_region_mas_grande, 'BoundingBox', 'Centroid');
+    boundingBox = props.BoundingBox;
+    centroid = props.Centroid;
+    
+    % Dibujar el rectángulo delimitador de la región más grande
+    rectangle('Position', boundingBox, 'EdgeColor', 'r', 'LineWidth', 2);
+    
+    % Dibujar el centroide de la región más grande
+    plot(centroid(1), centroid(2), 'g+', 'MarkerSize', 10, 'LineWidth', 2);
+    % Definir una máscara para la región de interés (por ejemplo, el rectángulo delimitador)
+    x = round(boundingBox(1));
+    y = round(boundingBox(2));
+    width = round(boundingBox(3));
+    height = round(boundingBox(4));
+    roi = imgBinary(y:y+height-1, x:x+width-1);
+    
+    % Aplicar dilatación a la región de interés
+    se = strel('disk', 5);  % Elemento estructurante para dilatación
+    roi_dilated = imdilate(roi, se);
+    
+    % Sustituir la región dilatada en la imagen original
+    imgBinary(y:y+height-1, x:x+width-1) = roi_dilated;
+    
+    % Mostrar la imagen con la dilatación aplicada
+    cc = bwconncomp(imgBinary);
+    props = regionprops(cc, 'Area', 'BoundingBox', 'Centroid');
+    [max_area, idx] = max([props.Area]);
+    mascara_region_mas_grande = false(size(imgBinary));
+    mascara_region_mas_grande(cc.PixelIdxList{idx}) = true;
+%}
