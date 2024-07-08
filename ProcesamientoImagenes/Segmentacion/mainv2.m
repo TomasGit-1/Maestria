@@ -1,4 +1,4 @@
-img = imread("imagenes proyecto\ISIC_0024306.jpg");
+img = imread("imagenes proyecto\ISIC_0024310.jpg");
 imGray = img;
 if size(img, 3) == 3
     imGray = rgb2gray(img);
