@@ -4,6 +4,8 @@ import numpy as np
 import copy
 
 
+
+
 def inorder_traversal(node):
     result = []
     def traverse(node):
@@ -58,9 +60,6 @@ def obtenerConfig(vector):
         hiidenNeuronsTemp[i] = hiidenNeuronsTemp[i].split("#")
     pass
 
-
-
-
 def GenotipoaFenotipo(nameRaiz, genotipo,hojas,nodos,struct,numeroNeuronas=0):
     try:
         #Creamos la raiz de nuestro arbol
@@ -90,8 +89,8 @@ def GenotipoaFenotipo(nameRaiz, genotipo,hojas,nodos,struct,numeroNeuronas=0):
                 for j in range(len(restante)):
                     nodo = TreeNode(restante[j])
                     actual.add_child(nodo)
-            # print(f"Arbol  actual ")
-            # print(raiz)
+            print(f"Arbol  actual ")
+            print(raiz)
 
             if nodoTemp.data in hojas:
                 #regresamos al sigueinte nodo libre
@@ -122,7 +121,6 @@ def GenotipoaFenotipo(nameRaiz, genotipo,hojas,nodos,struct,numeroNeuronas=0):
         return result
     except Exception as e:
         print(f"Error en generar fenotipo {str(e)}")
-
 
 def hiidenNeurons():
     struct ={

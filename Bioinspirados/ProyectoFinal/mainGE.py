@@ -15,7 +15,7 @@ if __name__ == '__main__':
     ns  = 2
     PR= ParametrosRed(N,M,ns)
     population=PR.Poblaciongenotipo(min_value=1, max_value=10, size_genotipo=500)    
-    numGen = 10
+    numGen = 11
     solutionFound = False
     maxError = 1
     objANNC = ANNC(log =  log)
