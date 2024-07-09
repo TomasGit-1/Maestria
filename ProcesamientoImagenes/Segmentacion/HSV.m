@@ -23,6 +23,7 @@ for k = 1:length(files)
         end
         procesar = imgGRAY;
     end
+    %valueMask = procesar >= 100;
     mascara_region_mas_grande = segmentacion(procesar);
      
     % Guardar resultados
@@ -33,7 +34,7 @@ for k = 1:length(files)
 
     objectivo = imread(sprintf('Resultados/%s_segmentation.png', name));
     imgSegmentada = imread(pathResult);
-    % Convertir a escala de grises si es necesario
+
     if size(imgSegmentada, 3) == 3
         imgSegmentada = rgb2gray(imgSegmentada);
     end
