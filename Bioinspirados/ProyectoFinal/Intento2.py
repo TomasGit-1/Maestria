@@ -3,6 +3,8 @@ from TreeNode import TreeNode
 import random
 from itertools import chain
 import copy
+from functAct import logistic, tanhiper, sinusoidal,gaussian,linear,HardLimit,Relu
+
 def formateList(data):
     formatted_list = []
     for el in data:
@@ -11,6 +13,24 @@ def formateList(data):
     if formatted_list:
         formatted_list.pop()
     return formatted_list
+
+def ActivationFunctions(label):
+    activationFunctions ={
+        0:{"name":"Logistic",          "Label":"LS",  "fx": logistic},
+        1:{"name":"Hyperbolic Tangent","Label":"HT",  "fx": tanhiper},
+        2:{"name":"Sinusoidal",        "Label":"SN",  "fx": sinusoidal},
+        3:{"name":"Gaussian",          "Label":"GS",  "fx": gaussian},
+        4:{"name":"Linear",            "Label":"LN",  "fx": linear},
+        5:{"name":"Hard limit",        "Label":"HL",  "fx": HardLimit},
+        6:{"name":"RectifiedLinear",   "Label":"RL",  "fx": Relu},
+    }
+    items = list(activationFunctions.items())
+    for i in range(len(items)):
+        indice, value = items[i]
+        if value["Label"] == label:
+            return indice
+    return -1
+
 N= 4
 M = 3
 
@@ -49,10 +69,6 @@ struct ={
 }
 
 def obtenerConfig(vector):
-    #Primer poso recorremos hasta encontrar le #
-    # configTemp = "".join(vector).split("[]")
-    # hiddenLayer = configTemp[0]
-    # outputLatyer = configTemp[1]
     hiddenLayers = vector[0].split("_")
     configNeurons = []
     for hiddenLayer in hiddenLayers:
@@ -71,10 +87,13 @@ def obtenerConfig(vector):
             for indice, sublista in enumerate(inputsToBinary):
                 if sublista[0] == "@"+inputID_temp[1]:
                     binaryWeights[indice] = inputID_temp[0]
-        configNeurons.append(topologia)
-        configNeurons.extend(binaryWeights)
-        configNeurons.append(bias)
-        configNeurons.append(functionActive)
+
+            configNeurons.append(topologia)
+            configNeurons.extend(binaryWeights)
+            configNeurons.append(bias)
+            indicelabel = ActivationFunctions(label = functionActive)
+            configNeurons.append(indicelabel)
+        configNeurons = [ str(i).replace("+","") for i in configNeurons]
         pass
    
 
@@ -173,10 +192,10 @@ def GenotipoaFenotipo(nameRaiz, genotipo,N, M):
                     #Ya creamos      "<network>":[["<hiddenNeurons>"],"[]",["<outputNeurons>"]],
                     break
         result = inorder_traversal(raiz)
-        print("\nConfiguracion:")
-        config= obtenerConfig(result)
-        print(config)
-        return config
+        # print("\nConfiguracion:")
+        # config= obtenerConfig(result)
+        print(result)
+        return result
     except Exception as e:
         print(f"Error en generar fenotipo {str(e)}")
 

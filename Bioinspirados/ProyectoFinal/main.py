@@ -9,7 +9,7 @@ log = configrationLogger(disable_logs=True)
 
 if __name__== "__main__":
     #inicializacion de la población
-    X_train, X_test, y_train, y_test = downloadDatasets(log, "BCW")
+    X_train, X_test, y_train, y_test = downloadDatasets(log, "balance")
     N=X_train.shape[1]
     valores, conteos = np.unique(y_train, return_counts=True)
     M = valores.shape[0]
