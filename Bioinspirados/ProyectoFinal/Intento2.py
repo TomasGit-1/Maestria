@@ -31,54 +31,18 @@ def ActivationFunctions(label):
             return indice
     return -1
 
-N= 4
-M = 3
-
-inputID = [[f"@i{n}"]  for n in range(1, N+1)]
-outputID = [[f"o{m}"] for m in range(1, M+1)]
-hojas=["0","1","2","3","4","5","6","7","8","9", "+","-","_",":","[]","@i0","#","@",".","iN","oM",",","LS","HT","SN","GS","LN","HL","LR"] 
-hojas.extend(inputID)
-hojas.extend(outputID)
-hojas = [item[0] if isinstance(item, list) else item for item in hojas]
-
-nodos=["<network>","<hiddenNeurons>","<outputNeurons>","<hiddenNeuron>","<func>","<inputs>","<outputs>","<input>","<output>","<outputID>","<inputID>","<weight>","<sign>","<digitList>","<digit>"]
-
-inputID = formateList(inputID)
-outputID = formateList(outputID)
-
-outputNeuronsStruct = [["<func>",":", "<weight>","@i0","_"][:] for _ in range(M)]
-outputNeuronsStruct = sum(outputNeuronsStruct, [])
-
-struct ={
-    "<network>":[["<hiddenNeurons>"],"[]",["<outputNeurons>"]],
-    "<hiddenNeurons>":[["<hiddenNeuron>"],["|"],["<hiddenNeuron>","_","<hiddenNeurons>"]],
-    "<hiddenNeuron>":["<func>",":", "<weight>", "@i0",",","<input>","#","<outputs>"],
-    "<outputNeurons>":outputNeuronsStruct,
-    # "<outputNeurons>":[["<func>: <weight> @i0_.._<func>: <weight> @i0"]],
-    "<func>":[["LS"],["|"], ["HT"],["|"],["SN"],["|"],["GS"],["|"],["LN"],["|"],["HL"],["|"],["LR"]],
-    "<inputs>":[["<input>"],["|"] ,["<input>",",","<inputs>"]],
-    "<outputs>":[["<output>"],["|"], ["<output>",",","<outputs>"]],
-    "<input>":["<weight>","<inputID>"],
-    "<output>":["<weight>","<outputID>"],
-    "<inputID>":inputID,
-    "<outputID>":outputID,
-    "<weight>":["<sign>","<digitList>",".","<digitList>"],
-    "<sign>":[["+"],["|"],["-"]],
-    "<digitList>":[["<digit>"],["<digit>","<digitList>"]],
-    "<digit>":[["0"],["|"],["1"],["|"],["2"],["|"],["3"],["|"],["4"],["|"],["5"],["|"],["6"],["|"],["7"],["|"],["8"],["|"],["9"]] #Tener cuidado generarlo manualemnte
-}
-
 def obtenerConfig(vector):
     hiddenLayers = vector[0].split("_")
+    H = len(hiddenLayers)
     configNeurons = []
-    for hiddenLayer in hiddenLayers:
+    conexions = []
+    for hiddenLayer in hiddenLayers:    
         functionActive = hiddenLayer.split(":")[0]
         bias = hiddenLayer[hiddenLayer.index(":")+1:hiddenLayer.index("@i0")]
         neurons = hiddenLayer[hiddenLayer.index("@i0")+4:hiddenLayer.index("#")]
         inputsToBinary = [sublist for sublist in inputID if sublist != ['|']]
         binary = [ 1 if inputpos[0] in neurons else 0 for inputpos in inputsToBinary  ] 
-        #Lo invertimos por que el mas significativo queda enfrente
-        # binary =binary[::-1]
+        conexions.append({functionActive:hiddenLayer.split("#")[1]})
         binary_str = ''.join(map(str, binary))
         topologia = int(binary_str, 2)
         binaryWeights = copy.deepcopy(binary)
@@ -87,15 +51,58 @@ def obtenerConfig(vector):
             for indice, sublista in enumerate(inputsToBinary):
                 if sublista[0] == "@"+inputID_temp[1]:
                     binaryWeights[indice] = inputID_temp[0]
-
             configNeurons.append(topologia)
             configNeurons.extend(binaryWeights)
             configNeurons.append(bias)
             indicelabel = ActivationFunctions(label = functionActive)
             configNeurons.append(indicelabel)
-        configNeurons = [ str(i).replace("+","") for i in configNeurons]
-        pass
-   
+    
+    output= []
+    for conn in conexions:
+        findNeuronsOutput = [i[1].split(",") for i in conn.items()]
+        weightOutput = {}
+        for item in findNeuronsOutput[0]:
+            value, suffix = item.split('o')
+            value = float(value)  
+            suffix = "o"+suffix
+            if suffix in weightOutput:
+                weightOutput[suffix] += value
+            else:
+                weightOutput[suffix] = value
+        actvos = ",".join(list(weightOutput.keys()))
+        output.append(weightOutput)
+
+    outputLayers = vector[1].split("_") #Con que neuronas de salida vamos a conectar}
+    outPutsToBinary = [sublist for sublist in outputID if sublist != ['|']]
+    strID = ','.join(item[0] for item in outPutsToBinary)
+    weightOutput = []
+    for idN in output:
+        count = 0
+        listTemp = []
+        while count < len(outPutsToBinary):
+            if "o"+str(count+1) in strID and "o"+str(count+1) in list(idN.keys()):
+                listTemp.append(idN["o"+str(count+1)])
+            else:
+                listTemp.append(0)
+            count += 1
+        weightOutput.append(listTemp)
+
+    configNeuronsOutput = []
+    for count , neuron in enumerate(outputLayers):
+        functionActive = neuron.split(":")[0]
+        indicelabel = ActivationFunctions(label = functionActive)
+        bias = neuron[neuron.index(":")+1:neuron.index("@i0")]
+        columnsN = [ w[count] for w in weightOutput ]
+        binary =[ 0 if pos == 0 else 1 for pos in columnsN]
+        binary_str = ''.join(map(str, binary))
+        topologia = int(binary_str, 2)
+
+        configNeuronsOutput.append(topologia)
+        configNeuronsOutput.extend(columnsN)
+        configNeuronsOutput.append(bias)
+        configNeuronsOutput.append(indicelabel)
+    configNeurons.extend(configNeuronsOutput)
+    pass    
 
 
 def inorder_traversal(node):
@@ -202,8 +209,41 @@ def GenotipoaFenotipo(nameRaiz, genotipo,N, M):
 
 
 if __name__ == "__main__":
+    inputID = [[f"@i{n}"]  for n in range(1, N+1)]
+    outputID = [[f"o{m}"] for m in range(1, M+1)]
+    hojas=["0","1","2","3","4","5","6","7","8","9", "+","-","_",":","[]","@i0","#","@",".","iN","oM",",","LS","HT","SN","GS","LN","HL","LR"] 
+    hojas.extend(inputID)
+    hojas.extend(outputID)
+    hojas = [item[0] if isinstance(item, list) else item for item in hojas]
+
+    nodos=["<network>","<hiddenNeurons>","<outputNeurons>","<hiddenNeuron>","<func>","<inputs>","<outputs>","<input>","<output>","<outputID>","<inputID>","<weight>","<sign>","<digitList>","<digit>"]
+
+    inputID = formateList(inputID)
+    outputID = formateList(outputID)
+
+    outputNeuronsStruct = [["<func>",":", "<weight>","@i0","_"][:] for _ in range(M)]
+    outputNeuronsStruct = sum(outputNeuronsStruct, [])
+
+    struct ={
+        "<network>":[["<hiddenNeurons>"],"[]",["<outputNeurons>"]],
+        "<hiddenNeurons>":[["<hiddenNeuron>"],["|"],["<hiddenNeuron>","_","<hiddenNeurons>"]],
+        "<hiddenNeuron>":["<func>",":", "<weight>", "@i0",",","<input>","#","<outputs>"],
+        "<outputNeurons>":outputNeuronsStruct,
+        # "<outputNeurons>":[["<func>: <weight> @i0_.._<func>: <weight> @i0"]],
+        "<func>":[["LS"],["|"], ["HT"],["|"],["SN"],["|"],["GS"],["|"],["LN"],["|"],["HL"],["|"],["LR"]],
+        "<inputs>":[["<input>"],["|"] ,["<input>",",","<inputs>"]],
+        "<outputs>":[["<output>"],["|"], ["<output>",",","<outputs>"]],
+        "<input>":["<weight>","<inputID>"],
+        "<output>":["<weight>","<outputID>"],
+        "<inputID>":inputID,
+        "<outputID>":outputID,
+        "<weight>":["<sign>","<digitList>",".","<digitList>"],
+        "<sign>":[["+"],["|"],["-"]],
+        "<digitList>":[["<digit>"],["<digit>","<digitList>"]],
+        "<digit>":[["0"],["|"],["1"],["|"],["2"],["|"],["3"],["|"],["4"],["|"],["5"],["|"],["6"],["|"],["7"],["|"],["8"],["|"],["9"]] #Tener cuidado generarlo manualemnte
+    }
     genotipo = np.random.randint(low=1, high=55, size=200)
-    vector = ['GS:+03.42@i0,+24.62@i3,-5.2@i1#+46.94o2_HT:+20.45@i0,+83.58@i2#+05.41o1', 'HT:+55.07@i0_LS:+89.46@i0_SN:+98.99@i0_']
+    
     obtenerConfig(vector)
     # hnConfg = GenotipoaFenotipo(nameRaiz = "<network>",
     #                                 genotipo = genotipo,N=2, M=3 )
